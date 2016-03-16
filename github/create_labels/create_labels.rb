@@ -18,6 +18,12 @@ require "bundler/setup"
 
 require "octokit"
 
+if !ENV["GH_TOKEN"]
+  $stderr.puts "Error: The Github access token is not set."
+  $stderr.puts "Pass it via the 'GH_TOKEN' environment variable."
+  exit 1
+end
+
 github = Octokit::Client.new(:access_token => ENV["GH_TOKEN"])
 
 # We need to load the YaST repos in a loop, by default GitHub returns
