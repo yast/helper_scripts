@@ -1,3 +1,12 @@
+Helper Scripts Contribution Guidelines
+--------------------------------------
+
+### Branching
+
+Use only the `master` branch in this repository for maintaining the latest
+version of the script. If your script is specific to only e.g. SLES12-SP1
+then mention it in the script or in the README file.
+
 YaST Contribution Guidelines
 ============================
 
