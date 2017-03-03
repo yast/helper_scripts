@@ -19,7 +19,7 @@ GH_ORG = "yast"
 # install missing gems
 if !File.exist?("./.vendor")
   puts "Installing the needed Rubygems to ./.vendor/bundle ..."
-  `bundle install --path .vendor/bundle`
+  system "bundle install --path .vendor/bundle"
 end
 
 require "rubygems"
