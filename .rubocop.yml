@@ -5,3 +5,7 @@ inherit_from:
 AllCops:
   Exclude:
     - '/**/vendor/**/*'
+
+Metrics/LineLength:
+  Max: 110
+

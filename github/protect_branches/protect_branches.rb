@@ -6,7 +6,7 @@
 # ("repo" access), create your token at https://github.com/settings/tokens/new.
 # You need admin access rights for the repo to change the protection.
 # Pass the token via "GH_TOKEN" environment variable.
-# 
+#
 # --------------------------------------------------------------------
 # Note: at the time of writing the Protected Branch API was available
 # as a developer preview, i.e. it could have been changed since that.
@@ -14,7 +14,7 @@
 
 # the GitHub organization, all organization repos will be processed
 # if you want to touch only some of them then write some filtering code
-GH_ORG = "yast"
+GH_ORG = "yast".freeze
 
 # install missing gems
 if !File.exist?("./.vendor")
@@ -33,7 +33,7 @@ if !ENV["GH_TOKEN"]
   exit 1
 end
 
-github = Octokit::Client.new(:access_token => ENV["GH_TOKEN"])
+github = Octokit::Client.new(access_token: ENV["GH_TOKEN"])
 
 # We need to load all repos in a loop, by default GitHub returns
 # only the first 30 items (with per_page option it can be raised up to 100).
@@ -44,7 +44,7 @@ git_repos = []
 begin
   print "."
   $stdout.flush
-  repos = github.repos(GH_ORG, :page => page)
+  repos = github.repos(GH_ORG, page: page)
   git_repos.concat(repos)
   page += 1
 end until repos.empty?
@@ -73,9 +73,9 @@ TO_PROTECT = [
   /\ASLE-12-SP[0-9]+\z/,
   # CASP 1.0
   /\ASLE-12-SP2-CASP\z/
-]
+].freeze
 
-repo_names = git_repos.map{|git_repo| git_repo["name"]}
+repo_names = git_repos.map { |git_repo| git_repo["name"] }
 
 # options - require PR reviews also for the admins
 options = {
@@ -89,13 +89,11 @@ repo_names.each do |repo|
   full_repo_name = "#{GH_ORG}/#{repo}"
   branches = github.branches(full_repo_name)
   branches.each do |branch|
-    if TO_PROTECT.any? {|r| branch["name"] =~ r}
-      puts "#{full_repo_name}: protecting branch #{branch["name"]}..."
-      github.protect_branch(full_repo_name, branch["name"], options)
-      counter += 1
-    end
+    next unless TO_PROTECT.any? { |r| branch["name"] =~ r }
+    puts "#{full_repo_name}: protecting branch #{branch["name"]}..."
+    github.protect_branch(full_repo_name, branch["name"], options)
+    counter += 1
   end
 end
 
 puts "Protection enabled for #{counter} branches in total."
-

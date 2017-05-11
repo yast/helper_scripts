@@ -24,7 +24,7 @@ if !ENV["GH_TOKEN"]
   exit 1
 end
 
-github = Octokit::Client.new(:access_token => ENV["GH_TOKEN"])
+github = Octokit::Client.new(access_token: ENV["GH_TOKEN"])
 
 # We need to load the YaST repos in a loop, by default GitHub returns
 # only the first 30 items (with per_page option it can be raised up to 100).
@@ -35,7 +35,7 @@ git_repos = []
 begin
   print "."
   $stdout.flush
-  repos = github.repos("yast", :page => page)
+  repos = github.repos("yast", page: page)
   git_repos.concat(repos)
   page += 1
 end until repos.empty?
@@ -43,15 +43,15 @@ end until repos.empty?
 puts "\nFound #{git_repos.size} Git repositories"
 
 # add a label for each repo
-LABEL = "blog"
-COLOR = "fbca04"
+LABEL = "blog".freeze
+COLOR = "fbca04".freeze
 
-repo_names = git_repos.map{|git_repo| git_repo["name"]}
+repo_names = git_repos.map { |git_repo| git_repo["name"] }
 
 created = 0
 repo_names.each do |repo|
   full_repo_name = "yast/#{repo}"
-  labels = github.labels(full_repo_name).map{|h| h["name"]}
+  labels = github.labels(full_repo_name).map { |h| h["name"] }
 
   if !labels.include?(LABEL)
     puts "Creating 'blog' label in repository: #{repo}"

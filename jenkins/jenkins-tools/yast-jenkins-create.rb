@@ -10,14 +10,14 @@ require "yaml"
 conf = YAML.load(File.read("jenkins.yml"))
 USER = conf["username"]
 PWD  = conf["password"]
-URL_BASE = "https://#{USER}:#{PWD}@ci.opensuse.org"
-#URL_BASE = "http://river.suse.de"
+URL_BASE = "https://#{USER}:#{PWD}@ci.opensuse.org".freeze
+# URL_BASE = "http://river.suse.de"
 
 # %s is replaced by arguments passed to program
-JOB_NAME_PATTERN = "yast-%s-master"
+JOB_NAME_PATTERN = "yast-%s-master".freeze
 
 ARGV.each do |mod|
-  #test if module already exist
+  # test if module already exist
   response_code = `curl -sL -w "%{http_code}" #{URL_BASE}/job/#{JOB_NAME_PATTERN % mod}/ -o /dev/null`
   next if response_code == "200"
 
@@ -27,6 +27,6 @@ ARGV.each do |mod|
 
   # adress found from https://ci.opensuse.org/api
   res = `curl -X POST #{URL_BASE}/createItem?name=#{JOB_NAME_PATTERN % mod} --header "Content-Type:application/xml" -d @config.xml.tmp`
-  puts "ERROR: #{res}" if $?.exitstatus != 0
+  puts "ERROR: #{res}" if $CHILD_STATUS.exitstatus != 0
   puts "ERROR: Wrong Credentials. \n #{res}" if res =~ /Authentication required/
 end

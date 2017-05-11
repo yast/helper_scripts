@@ -20,11 +20,11 @@ new_xml = "<hudson.triggers.SCMTrigger><spec># everyday some time between 1:00AM
 new_node = REXML::Document.new(new_xml).root
 
 jenkins_jobs.each_with_index do |job, index|
-  puts "[#{100*index/jenkins_jobs.size}% #{index + 1}/#{jenkins_jobs.size}] Modifying job #{job}..."
+  puts "[#{100 * index / jenkins_jobs.size}% #{index + 1}/#{jenkins_jobs.size}] Modifying job #{job}..."
 
   xml = jenkins.get_config("/job/#{job}")
   xmldoc = REXML::Document.new(xml)
-  
+
   poll = xmldoc.elements["//project/triggers/hudson.triggers.SCMTrigger"]
 
   # remove the poll config if already present

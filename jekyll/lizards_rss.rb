@@ -12,24 +12,22 @@ module JekyllImport
   module Importers
     class LizardsRSS < Importer
       def self.specify_options(c)
-        c.option 'source', '--source NAME', 'The RSS file or URL to import'
+        c.option "source", "--source NAME", "The RSS file or URL to import"
       end
 
       def self.validate(options)
-        if options['source'].nil?
-          abort "Missing mandatory option --source."
-        end
+        abort "Missing mandatory option --source." if options["source"].nil?
       end
 
       def self.require_deps
-        JekyllImport.require_with_fallback(%w[
-          rss
-          rss/1.0
-          rss/2.0
-          open-uri
-          fileutils
-          safe_yaml
-        ])
+        JekyllImport.require_with_fallback(%w(
+                                             rss
+                                             rss/1.0
+                                             rss/2.0
+                                             open-uri
+                                             fileutils
+                                             safe_yaml
+                                           ))
       end
 
       # Process the import.
@@ -38,7 +36,7 @@ module JekyllImport
       #
       # Returns nothing.
       def self.process(options)
-        source = options.fetch('source')
+        source = options.fetch("source")
 
         content = File.read(source)
         rss = ::RSS::Parser.parse(content, false)
@@ -54,7 +52,7 @@ module JekyllImport
 
       def self.import_post(item)
         puts "Importing post \"#{item.title}\"..."
-        formatted_date = item.date.strftime('%Y-%m-%d')
+        formatted_date = item.date.strftime("%Y-%m-%d")
         post = item.content_encoded
 
         # convert MSDOS newlines to Unix newlines
@@ -64,7 +62,7 @@ module JekyllImport
         # download images from lizards.opensuse.org and replace the URLs
         download_and_replace_images(post, "images/#{formatted_date}")
         # convert to Markdown
-        md_content = Kramdown::Document.new(post, :html_to_native => true).to_kramdown
+        md_content = Kramdown::Document.new(post, html_to_native: true).to_kramdown
 
         file_path = "_posts/#{formatted_date}-#{post_name(item)}.md"
         # add the YAML header
@@ -74,11 +72,11 @@ module JekyllImport
       # simple&stupid emoji replacement, we used just few emoticons
       # do not overengeneer
       EMOJI = {
-        '<img src="https://s.w.org/images/core/emoji/72x72/1f609.png" alt="&#x1f609;" class="wp-smiley" style="height: 1em; max-height: 1em;" />' => ":wink:",
+        '<img src="https://s.w.org/images/core/emoji/72x72/1f609.png" alt="&#x1f609;" class="wp-smiley" style="height: 1em; max-height: 1em;" />'   => ":wink:",
         '<img src="https://s.w.org/images/core/emoji/2/72x72/1f609.png" alt="&#x1f609;" class="wp-smiley" style="height: 1em; max-height: 1em;" />' => ":wink:",
-        '<img src="https://s.w.org/images/core/emoji/72x72/1f642.png" alt="&#x1f609;" class="wp-smiley" style="height: 1em; max-height: 1em;" />' => ":simple_smile:",
+        '<img src="https://s.w.org/images/core/emoji/72x72/1f642.png" alt="&#x1f609;" class="wp-smiley" style="height: 1em; max-height: 1em;" />'   => ":simple_smile:",
         '<img src="https://s.w.org/images/core/emoji/2/72x72/1f642.png" alt="&#x1f642;" class="wp-smiley" style="height: 1em; max-height: 1em;" />' => ":simple_smile:"
-      }
+      }.freeze
 
       def self.replace_emoji(post)
         EMOJI.each do |link, emoji|
@@ -133,14 +131,14 @@ module JekyllImport
 
       def self.yaml_header(item)
         header = {
-          'layout' => 'post',
-          'date' => item.pubDate,
-          'title' => item.title,
-          'description' => item.description,
+          "layout"      => "post",
+          "date"        => item.pubDate,
+          "title"       => item.title,
+          "description" => item.description,
           # the catogires and tags must be fixed manually
           # RSS feed mixes both into a single list
-          'category' => item.categories.map(&:content),
-          'tags' => item.categories.map(&:content),
+          "category"    => item.categories.map(&:content),
+          "tags"        => item.categories.map(&:content)
         }
 
         header.to_yaml
@@ -148,10 +146,10 @@ module JekyllImport
 
       def self.post_name(item)
         name = item.title.split(%r{ |!|’|/|:|&|-|$|,|\(|\)}).map do |i|
-          i.downcase if i != ''
+          i.downcase if i != ""
         end
 
-        name.compact.join('-')
+        name.compact.join("-")
       end
 
       # delete unused attributes

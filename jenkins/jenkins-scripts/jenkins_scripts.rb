@@ -1,5 +1,5 @@
 
-JENKINS_URL = "https://ci.opensuse.org"
+JENKINS_URL = "https://ci.opensuse.org".freeze
 
 def check_credentials
   if !ENV["JENKINS_USER"] || !ENV["JENKINS_PASSWORD"]

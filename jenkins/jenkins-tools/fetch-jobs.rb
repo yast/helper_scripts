@@ -38,7 +38,7 @@ module GetJobs
       end
     end
 
-    private
+  private
 
     def parse_options(argv)
       opts = { config: "jenkins.yml", prefix: "yast-", output: "jobs" }
