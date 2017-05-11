@@ -41,13 +41,14 @@ print "Reading #{GH_ORG.inspect} repositories at GitHub..."
 $stdout.flush
 page = 1
 git_repos = []
-begin
+loop do
   print "."
   $stdout.flush
   repos = github.repos(GH_ORG, page: page)
+  break if repos.empty?
   git_repos.concat(repos)
   page += 1
-end until repos.empty?
+end
 
 puts "\nFound #{git_repos.size} Git repositories"
 

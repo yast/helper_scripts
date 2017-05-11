@@ -16,7 +16,8 @@ jenkins = jenkins_client
 jenkins_jobs = jenkins.job.list_all.select { |j| j.start_with?("yast-") }
 puts "Found #{jenkins_jobs.size} jobs"
 
-new_xml = "<hudson.triggers.SCMTrigger><spec># everyday some time between 1:00AM and 2:59AM\nH H(1-2) * * *</spec></hudson.triggers.SCMTrigger>"
+new_xml = "<hudson.triggers.SCMTrigger><spec># everyday some time between 1:00AM and 2:59AM\n" \
+  "H H(1-2) * * *</spec></hudson.triggers.SCMTrigger>"
 new_node = REXML::Document.new(new_xml).root
 
 jenkins_jobs.each_with_index do |job, index|

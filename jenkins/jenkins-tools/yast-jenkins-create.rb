@@ -26,7 +26,8 @@ ARGV.each do |mod|
   `sed 's/yast-.*\.git/yast-#{mod}.git/' config.xml > config.xml.tmp`
 
   # adress found from https://ci.opensuse.org/api
-  res = `curl -X POST #{URL_BASE}/createItem?name=#{JOB_NAME_PATTERN % mod} --header "Content-Type:application/xml" -d @config.xml.tmp`
+  res = `curl -X POST #{URL_BASE}/createItem?name=#{JOB_NAME_PATTERN % mod} " \
+    "--header "Content-Type:application/xml" -d @config.xml.tmp`
   puts "ERROR: #{res}" if $CHILD_STATUS.exitstatus != 0
   puts "ERROR: Wrong Credentials. \n #{res}" if res =~ /Authentication required/
 end

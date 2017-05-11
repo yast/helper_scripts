@@ -39,16 +39,17 @@ ARGV.each do |mod|
   `sed 's/yast-[a-z_-]*\.git/#{git_name}.git/' config.xml > config.xml.tmp`
 
   # adress found from https://ci.opensuse.org/api
-  cmd = "curl -X POST #{URL_BASE}/job/#{JOB_NAME_PATTERN % mod}/config.xml --header \"Content-Type:application/xml\" -d @config.xml.tmp"
+  cmd = "curl -X POST #{URL_BASE}/job/#{JOB_NAME_PATTERN % mod}/config.xml " \
+    "--header \"Content-Type:application/xml\" -d @config.xml.tmp"
   puts "Sending data for module #{git_name} with #{cmd}"
   res = `#{cmd}`
   puts "ERROR: curl exited with non-zero value" if $CHILD_STATUS.exitstatus != 0
   puts case res
-    when ""
-      "Succeed"
-    when /Authentication required/
-      "ERROR: Wrong Credentials. \n #{res}"
-    else
-      "non-standard response: #{res}"
-    end
+  when ""
+    "Succeed"
+  when /Authentication required/
+    "ERROR: Wrong Credentials. \n #{res}"
+  else
+    "non-standard response: #{res}"
+  end
 end

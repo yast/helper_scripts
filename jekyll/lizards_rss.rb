@@ -10,6 +10,7 @@ require "kramdown"
 # The code is based on the JekyllImport::Importers::RSS code
 module JekyllImport
   module Importers
+    # Specific lizards.o.o RSS importer
     class LizardsRSS < Importer
       def self.specify_options(c)
         c.option "source", "--source NAME", "The RSS file or URL to import"
@@ -50,6 +51,16 @@ module JekyllImport
         end
       end
 
+      def self.emoji(img, code)
+        "<img src=\"https://s.w.org/images/core/emoji/72x72/#{img}.png\" " \
+        "alt=\"&#x#{code};\" class=\"wp-smiley\" style=\"height: 1em; max-height: 1em;\" />"
+      end
+
+      def self.emoji2(img, code)
+        "<img src=\"https://s.w.org/images/core/emoji/2/72x72/#{img}.png\" " \
+        "alt=\"&#x#{code};\" class=\"wp-smiley\" style=\"height: 1em; max-height: 1em;\" />"
+      end
+
       def self.import_post(item)
         puts "Importing post \"#{item.title}\"..."
         formatted_date = item.date.strftime("%Y-%m-%d")
@@ -72,10 +83,10 @@ module JekyllImport
       # simple&stupid emoji replacement, we used just few emoticons
       # do not overengeneer
       EMOJI = {
-        '<img src="https://s.w.org/images/core/emoji/72x72/1f609.png" alt="&#x1f609;" class="wp-smiley" style="height: 1em; max-height: 1em;" />'   => ":wink:",
-        '<img src="https://s.w.org/images/core/emoji/2/72x72/1f609.png" alt="&#x1f609;" class="wp-smiley" style="height: 1em; max-height: 1em;" />' => ":wink:",
-        '<img src="https://s.w.org/images/core/emoji/72x72/1f642.png" alt="&#x1f609;" class="wp-smiley" style="height: 1em; max-height: 1em;" />'   => ":simple_smile:",
-        '<img src="https://s.w.org/images/core/emoji/2/72x72/1f642.png" alt="&#x1f642;" class="wp-smiley" style="height: 1em; max-height: 1em;" />' => ":simple_smile:"
+        emoji("1f609", "1f609")  => ":wink:",
+        emoji("1f642", "1f642")  => ":simple_smile:",
+        emoji2("1f609", "1f609") => ":wink:",
+        emoji2("1f642", "1f642") => ":simple_smile:"
       }.freeze
 
       def self.replace_emoji(post)
@@ -99,7 +110,8 @@ module JekyllImport
 
       def self.download_and_replace_tag(tree, download_dir, tag, attribute)
         # replace only URLs pointing to an uploaded content
-        tree.xpath("//#{tag}[contains(@#{attribute},\"//lizards.opensuse.org/wp-content/uploads\")]").each do |node|
+        tree.xpath("//#{tag}[contains(@#{attribute},\"//lizards.opensuse.org/wp-content/uploads\")]")
+            .each do |node|
           src = node.attribute(attribute).value
           # add HTTPS if there is no protocol
           src = "https:#{src}" if src.start_with?("//")

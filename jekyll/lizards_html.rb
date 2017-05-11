@@ -9,6 +9,7 @@ require "kramdown"
 # parse date
 require "date"
 
+# lizards.o.o HTML importer
 class LizardsHtmlImporter
   attr_reader :html_file
 
@@ -60,13 +61,23 @@ class LizardsHtmlImporter
     File.write(file_path, yaml_header(post) + "---\n\n" + md_content)
   end
 
+  def self.emoji(img, code)
+    "<img src=\"https://s.w.org/images/core/emoji/72x72/#{img}.png\" " \
+    "alt=\"&#x#{code};\" class=\"wp-smiley\" style=\"height: 1em; max-height: 1em;\" />"
+  end
+
+  def self.emoji2(img, code)
+    "<img src=\"https://s.w.org/images/core/emoji/2/72x72/#{img}.png\" " \
+    "alt=\"&#x#{code};\" class=\"wp-smiley\" style=\"height: 1em; max-height: 1em;\" />"
+  end
+
   # simple&stupid emoji replacement, we used just few emoticons
   # do not overengeneer
   EMOJI = {
-    '<img src="https://s.w.org/images/core/emoji/72x72/1f609.png" alt="&#x1f609;" class="wp-smiley" style="height: 1em; max-height: 1em;" />'   => ":wink:",
-    '<img src="https://s.w.org/images/core/emoji/2/72x72/1f609.png" alt="&#x1f609;" class="wp-smiley" style="height: 1em; max-height: 1em;" />' => ":wink:",
-    '<img src="https://s.w.org/images/core/emoji/72x72/1f642.png" alt="&#x1f609;" class="wp-smiley" style="height: 1em; max-height: 1em;" />'   => ":simple_smile:",
-    '<img src="https://s.w.org/images/core/emoji/2/72x72/1f642.png" alt="&#x1f642;" class="wp-smiley" style="height: 1em; max-height: 1em;" />' => ":simple_smile:"
+    emoji("1f609", "1f609")  => ":wink:",
+    emoji("1f642", "1f642")  => ":simple_smile:",
+    emoji2("1f609", "1f609") => ":wink:",
+    emoji2("1f642", "1f642") => ":simple_smile:"
   }.freeze
 
   def replace_emoji(post)
@@ -85,7 +96,8 @@ class LizardsHtmlImporter
   # replace images by a local copy, download images if not already present
   def download_and_replace_tag(tree, download_dir, tag, attribute)
     # replace only URLs pointing to an uploaded content
-    tree.xpath(".//#{tag}[contains(@#{attribute},\"//lizards.opensuse.org/wp-content/uploads\")]").each do |node|
+    tree.xpath(".//#{tag}[contains(@#{attribute},\"//lizards.opensuse.org/wp-content/uploads\")]")
+        .each do |node|
       src = node.attribute(attribute).value
       # add HTTPS if there is no protocol
       src = "https:#{src}" if src.start_with?("//")
