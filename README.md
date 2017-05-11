@@ -1,5 +1,8 @@
 # YaST Helper Scripts
 
+[![Build Status](https://travis-ci.org/yast/helper_scripts.svg?branch=master)](
+https://travis-ci.org/yast/helper_scripts)
+
 This repository contains various helper scripts related to the YaST development
 or usage.
 

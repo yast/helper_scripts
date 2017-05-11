@@ -1,0 +1,11 @@
+# use the shared Yast defaults
+inherit_from:
+  /usr/share/YaST2/data/devtools/data/rubocop_yast_style.yml
+
+AllCops:
+  Exclude:
+    - '/**/vendor/**/*'
+
+Metrics/LineLength:
+  Max: 110
+

@@ -20,6 +20,7 @@ require "optparse"
 require "fileutils"
 
 module GetJobs
+  # the main application
   class Application
     def initialize(argv)
       opts = parse_options(argv)
@@ -38,7 +39,7 @@ module GetJobs
       end
     end
 
-    private
+  private
 
     def parse_options(argv)
       opts = { config: "jenkins.yml", prefix: "yast-", output: "jobs" }

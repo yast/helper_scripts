@@ -5,7 +5,7 @@ require_relative "lizards_rss"
 require_relative "lizards_html"
 
 Dir["*.xml"].each do |xml|
-  JekyllImport::Importers::LizardsRSS.run( "source" => xml )
+  JekyllImport::Importers::LizardsRSS.run("source" => xml)
 end
 
 Dir["*.html"].each do |html|
