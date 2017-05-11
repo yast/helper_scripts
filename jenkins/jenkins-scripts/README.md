@@ -1,7 +1,7 @@
 
 # Jenkins Scripts
 
-Here is a collection of Jenkins script for mass management.
+Here is a collection of Jenkins scripts for mass management.
 
 The credentials for [public Jenkins instance](https://ci.opensuse.org/view/Yast)
 can be found in the [internal Wiki page](https://wiki.microfocus.net/index.php/YAST).

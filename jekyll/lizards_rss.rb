@@ -21,14 +21,7 @@ module JekyllImport
       end
 
       def self.require_deps
-        JekyllImport.require_with_fallback(%w(
-                                             rss
-                                             rss/1.0
-                                             rss/2.0
-                                             open-uri
-                                             fileutils
-                                             safe_yaml
-                                           ))
+        JekyllImport.require_with_fallback(%w(rss rss/1.0 rss/2.0 open-uri fileutils safe_yaml))
       end
 
       # Process the import.
