@@ -76,21 +76,36 @@ TO_PROTECT = [
   /\ASLE-12-SP2-CASP\z/
 ].freeze
 
+# skip these repositories
+IGNORED_REPOS = [
+  # SCRUM status (no pull requests)
+  "burndown",
+  # the translations are committed directly by Weblate (no pull requests)
+  "yast-translations"
+].freeze
+
 repo_names = git_repos.map { |git_repo| git_repo["name"] }
+# remove the ignored repos
+repo_names -= IGNORED_REPOS
 
 # options - require PR reviews also for the admins
 options = {
+  "enforce_admins"                => true,
   "required_pull_request_reviews" => {
     "include_admins" => true
   }
 }
 
+puts "Checking the repository branches..."
+
 counter = 0
 repo_names.each do |repo|
   full_repo_name = "#{GH_ORG}/#{repo}"
-  branches = github.branches(full_repo_name)
+  # special accept header is required to get the branch protection status
+  # (see https://developer.github.com/v3/repos/branches/#list-branches)
+  branches = github.branches(full_repo_name, accept: "application/vnd.github.loki-preview+json")
   branches.each do |branch|
-    next unless TO_PROTECT.any? { |r| branch["name"] =~ r }
+    next if branch["protected"] || !TO_PROTECT.any? { |r| branch["name"] =~ r }
     puts "#{full_repo_name}: protecting branch #{branch["name"]}..."
     github.protect_branch(full_repo_name, branch["name"], options)
     counter += 1
