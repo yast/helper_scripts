@@ -1,6 +1,7 @@
 #! /usr/bin/env ruby
 require "fileutils"
 require "yaml"
+require "english"
 
 # script for mass create of jobs in our jenkins
 # credentials stored in jenkins.yml
@@ -12,7 +13,6 @@ USER = conf["username"]
 PWD  = conf["password"]
 URL_BASE = "https://#{USER}:#{PWD}@ci.suse.de".freeze
 puts URL_BASE.inspect
-# URL_BASE = "http://river.suse.de"
 
 # %s is replaced by arguments passed to program
 JOB_NAME_PATTERN = "yast-%s-master".freeze
@@ -25,12 +25,13 @@ ARGV.each do |mod|
   puts "Creating #{mod} ..."
   FileUtils.rm_f "config.xml.tmp"
   # now modify config.xml to fit given module
-  `sed 's/yast-.*\.git/yast-#{mod}.git/' config.xml > config.xml.tmp`
+  `sed 's/yast-.*\.git/#{mod}.git/' config.xml > config.xml.tmp`
 
   # adress found from https://ci.opensuse.org/api
-  # link how to generate crumb header is at https://wiki.jenkins.io/display/JENKINS/Remote+access+API#RemoteaccessAPI-CSRFProtection
+  # if crumb is required please read and add it as --header https://wiki.jenkins.io/display/JENKINS/Remote+access+API#RemoteaccessAPI-CSRFProtection
   res = `curl --http1.0 -X POST #{URL_BASE}/createItem?name=#{JOB_NAME_PATTERN % mod} \
-    --header "Content-Type:application/xml" --header "Jenkins-Crumb:45b1e2bd56c66ef7a03393c3911eb423" -d @config.xml.tmp`
-  puts "ERROR: #{res}" if $?.exitstatus != 0
+    --header "Content-Type:application/xml"
+    -d @config.xml.tmp`
+  puts "ERROR: #{res}" if $CHILD_STATUS.exitstatus != 0
   puts "ERROR: Wrong Credentials. \n #{res}" if res =~ /Authentication required/
 end
