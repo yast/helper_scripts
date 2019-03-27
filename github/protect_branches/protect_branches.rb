@@ -34,26 +34,14 @@ if !ENV["GH_TOKEN"]
 end
 
 github = Octokit::Client.new(access_token: ENV["GH_TOKEN"])
+github.auto_paginate = true
 
-# We need to load all repos in a loop, by default GitHub returns
-# only the first 30 items (with per_page option it can be raised up to 100).
-print "Reading #{GH_ORG.inspect} repositories at GitHub..."
-$stdout.flush
-page = 1
-git_repos = []
-loop do
-  print "."
-  $stdout.flush
-  repos = github.repos(GH_ORG, page: page)
-  break if repos.empty?
-  git_repos.concat(repos)
-  page += 1
-end
-
+puts "Reading #{GH_ORG.inspect} repositories at GitHub..."
+git_repos = github.list_repositories(GH_ORG)
 puts "\nFound #{git_repos.size} Git repositories"
 
 # branches to protect, list of regexps - use as much specific regexp as possible
-# to avoid matching branches like "SLE-12-SP1_bnc_966413" which is actualy
+# to avoid matching branches like "SLE-12-SP1_bnc_966413" which is actually
 # a bugfix topic branch, not a maintenance one
 TO_PROTECT = [
   # master
@@ -72,6 +60,10 @@ TO_PROTECT = [
   /\ASLE-12-GA\z/,
   # SLE12 SPx
   /\ASLE-12-SP[0-9]+\z/,
+  # SLE15 GA
+  /\ASLE-15-GA\z/,
+  # SLE12 SPx
+  /\ASLE-15-SP[0-9]+\z/,
   # CASP 1.0
   /\ASLE-12-SP2-CASP\z/
 ].freeze
