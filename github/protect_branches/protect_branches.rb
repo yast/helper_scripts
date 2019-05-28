@@ -26,19 +26,30 @@ require "rubygems"
 require "bundler/setup"
 
 require "octokit"
+require "parallel"
 
-if !ENV["GH_TOKEN"]
+# use ~/.netrc ?
+netrc = File.join(Dir.home, ".netrc")
+client_options = if ENV["GH_TOKEN"]
+  # Generate at https://github.com/settings/tokens
+  { access_token: ENV["GH_TOKEN"] }
+elsif File.exist?(netrc) && File.read(netrc).match(/^machine api.github.com/)
+  # see https://github.com/octokit/octokit.rb#authentication
+  { netrc: true }
+else
   $stderr.puts "Error: The Github access token is not set."
-  $stderr.puts "Pass it via the 'GH_TOKEN' environment variable."
+  $stderr.puts "Pass it via the 'GH_TOKEN' environment variable"
+  $stderr.puts "or write it to the ~/.netrc file."
+  $stderr.puts "See https://github.com/octokit/octokit.rb#using-a-netrc-file"
   exit 1
 end
 
-github = Octokit::Client.new(access_token: ENV["GH_TOKEN"])
+github = Octokit::Client.new(client_options)
 github.auto_paginate = true
 
 puts "Reading #{GH_ORG.inspect} repositories at GitHub..."
 git_repos = github.list_repositories(GH_ORG)
-puts "\nFound #{git_repos.size} Git repositories"
+puts "Found #{git_repos.size} Git repositories\n\n"
 
 # branches to protect, list of regexps - use as much specific regexp as possible
 # to avoid matching branches like "SLE-12-SP1_bnc_966413" which is actually
@@ -52,6 +63,8 @@ TO_PROTECT = [
   /\ASLE10\z/,
   # SLE10 SPx
   /\ASLE10-SP[0-9]+\z/,
+  # some repos use a different schema
+  /\ASLE-10-SP[0-9]+\z/,
   # SLE11 GA
   /\ACode-11\z/,
   # SLE11 SPx
@@ -85,23 +98,25 @@ options = {
   "enforce_admins"                => true,
   "required_pull_request_reviews" => {
     "include_admins" => true
-  }
+  },
+  # Beta API, it needs a special accept header to not display a warning
+  # https://developer.github.com/v3/repos/branches/#update-branch-protection
+  accept: "application/vnd.github.luke-cage-preview+json"
 }
 
-puts "Checking the repository branches..."
-
-counter = 0
-repo_names.each do |repo|
+results = Parallel.map(repo_names) do |repo|
   full_repo_name = "#{GH_ORG}/#{repo}"
+  puts "Checking #{full_repo_name} branches..."
   # special accept header is required to get the branch protection status
   # (see https://developer.github.com/v3/repos/branches/#list-branches)
-  branches = github.branches(full_repo_name, accept: "application/vnd.github.loki-preview+json")
-  branches.each do |branch|
-    next if branch["protected"] || !TO_PROTECT.any? { |r| branch["name"] =~ r }
-    puts "#{full_repo_name}: protecting branch #{branch["name"]}..."
+  branches = github.branches(full_repo_name, accept: "application/vnd.github.luke-cage-preview+json")
+
+  branches.reduce(0) do |counter, branch|
+    next counter if branch["protected"] || !TO_PROTECT.any? { |r| branch["name"] =~ r }
+    puts "  #{full_repo_name}: protecting branch #{branch["name"]}..."
     github.protect_branch(full_repo_name, branch["name"], options)
-    counter += 1
+    counter + 1
   end
 end
 
-puts "Protection enabled for #{counter} branches in total."
+puts "Protection enabled for #{results.sum} branches in total."
