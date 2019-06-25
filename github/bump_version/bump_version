@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+require_relative "lib/y2dev/version_bumper"
+
+# require "byebug"; byebug
+bumper = Y2Dev::VersionBumper::Runner.new(ARGV)
+bumper.bump_version
+
