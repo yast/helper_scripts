@@ -1,7 +1,7 @@
 require "optparse"
 
 module Y2Dev
-  module VersionBumper
+  class VersionBumper
     class Options
 
       attr_accessor :directory, :bug, :version, :branch
