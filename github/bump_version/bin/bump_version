@@ -1,0 +1,63 @@
+#!/usr/bin/env ruby
+
+dir = File.expand_path("../../lib", __FILE__)
+$LOAD_PATH.unshift(dir) unless $LOAD_PATH.include?(dir)
+
+require "y2dev/scripts/bump_version"
+
+# require "byebug"; byebug
+Y2Dev::Scripts::BumpVersion.run(ARGV)
+#bumper.bump_version
+
+require "byebug"; byebug
+
+require "octokit"
+
+github = Octokit::Client.new(login: "joseivanlopez", password: "")
+# repo = github.repository("joseivanlopez/hello_world")
+# master = github.branch("joseivanlopez/hello_world", "master")
+# master_sha = master.commit.sha
+# master_sha = github.ref("joseivanlopez/hello_world", "heads/master").object.sha
+# testing = github.ref("joseivanlopez/hello_world", "heads/testing")
+
+repo = "joseivanlopez/hello_world"
+branch_name = "testing2"
+prs = []
+
+pr = github.create_pull_request(repo, "master", branch_name, "Bump version",
+  "Automatically version bumping")
+
+prs << pr.html_url
+
+require "byebug"; byebug
+
+master = github.branch(repo, "master")
+last_commit = master.commit
+
+# github.create_ref(repo, "heads/#{branch_name}", last_commit.sha)
+
+paths = ["src/hello.rb", "src/greets.rb"]
+
+# github.update_contents("joseivanlopez/hello_world", file.path, "Testing: add a comment", file.sha, file_content, branch: "testing")
+
+tree_entries = []
+
+paths.each do |path|
+  file = github.contents(repo, ref: branch_name, path: path)
+  content = Base64.decode64(file.content)
+  content << "# a comment"
+
+  blob = github.create_blob(repo, content)
+  tree_entries << { path: file.path, mode: "100644", type: "blob", sha: blob }
+end
+
+tree = github.create_tree(repo, tree_entries, base_tree: last_commit.commit.tree.sha)
+
+commit = github.create_commit(repo, "Several files", tree.sha, last_commit.sha)
+
+github.update_branch(repo, branch_name, commit.sha)
+
+
+puts ""
+
+

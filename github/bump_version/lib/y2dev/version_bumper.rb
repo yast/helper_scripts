@@ -1,66 +1,88 @@
-require "y2dev/version_bumper/options"
-require "y2dev/github/repository"
+# require "y2dev/github/repository"
 
 module Y2Dev
   class VersionBumper
-    def initialize(args)
-      @args = args
+    attr_accessor :version_number
+
+    attr_accessor :branch_name
+
+    attr_accessor :bug_number
+
+    attr_accessor :repository
+
+    def initialize
+      yield(self)
     end
 
     def bump_version
-      options
-
-      repositories.each do |repository|
-        bump_repository(repository)
-      end
-
-      nil
+      update_repository
+      create_pull_request
     end
 
   private
 
-    attr_reader :args
+    def update_repository
+      update_spec_file
+      update_changes_file
 
-    def options
-      @options ||= parse_options
+      create_branch
+      create_commit
     end
 
-    def repositories
-      @repositories ||= read_repositories
+    def update_spec_file
+      content = repository.content(spec_file)
+
+      content = modify_version_number(content)
+
+      repository.update_content(spec_file, content)
     end
 
-    def parse_options
-      Options.new(args).parse
+    def update_changes_file
+      content = repository.content(changes_file)
+
+      content = add_changelog(content)
+
+      repository.update_content(changes_file, content)
     end
 
-    def read_repositories
-      GitHub::Repository.all(options.directory)
+    def modify_version_number(content)
+      # TODO
+      content + "\n# testing\n"
+    end
+
+    def add_changelog(content)
+      # TODO
+      content + "\n# testing\n"
+    end
+
+    def create_branch
+      repository.create_branch(branch_name)
     end
 
     COMMIT_MESSAGE = "Update version and changelog".freeze
 
-    def bump_repository(repository)
-      repository.new_branch(options.branch)
-
-      update_spec(repository)
-      update_chagelog(repository)
-
-      repository.commit(COMMIT_MESSAGE)
-      repository.push
-
-      pull_request(repository)
+    def create_commit
+      repository.create_commit(COMMIT_MESSAGE)
     end
 
-    def update_spec(repository)
-      spec_file = repository.file("package/*.spec")
+    def create_pull_request
+      repository.create_pull_request("master", branch_name, pull_request_title, pull_request_body)
     end
 
-    def update_chagelog(repository)
-
+    def pull_request_title
+      ""
     end
 
-    def pull_request(repository)
+    def pull_request_body
+      ""
+    end
 
+    def spec_file
+      repository.file("package/*.spec")
+    end
+
+    def changes_files
+      repository.file("package/*.changes")
     end
   end
 end
