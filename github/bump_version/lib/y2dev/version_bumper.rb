@@ -1,4 +1,4 @@
-# require "y2dev/github/repository"
+require "y2dev/github/repository"
 
 module Y2Dev
   class VersionBumper

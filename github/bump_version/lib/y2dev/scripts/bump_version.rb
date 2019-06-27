@@ -1,4 +1,5 @@
 require "y2dev/scripts/bump_version/options"
+# require "y2dev/github"
 require "y2dev/version_bumper"
 
 module Y2Dev

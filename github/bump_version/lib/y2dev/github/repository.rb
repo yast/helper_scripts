@@ -1,12 +1,13 @@
 module Y2Dev
-  module Github
+  class Github
     class Repository
-      def self.all
+      attr_reader :client
 
-      end
+      attr_reader :data
 
-      def initialize
-
+      def initialize(client, data)
+        @client = client
+        @data = data
       end
 
       def file(pattern)
@@ -28,7 +29,7 @@ module Y2Dev
       end
 
       def create_pull_request(base, head, title, body)
-
+      end
     end
   end
 end

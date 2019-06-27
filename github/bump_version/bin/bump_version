@@ -4,16 +4,15 @@ dir = File.expand_path("../../lib", __FILE__)
 $LOAD_PATH.unshift(dir) unless $LOAD_PATH.include?(dir)
 
 require "y2dev/scripts/bump_version"
+require "y2dev/github"
 
-# require "byebug"; byebug
-Y2Dev::Scripts::BumpVersion.run(ARGV)
-#bumper.bump_version
+#Y2Dev::Scripts::BumpVersion.run(ARGV)
 
-require "byebug"; byebug
 
-require "octokit"
+# require "octokit"
 
-github = Octokit::Client.new(login: "joseivanlopez", password: "")
+# github = Octokit::Client.new(netrc: true)
+# github = Octokit::Client.new(login: "joseivanlopez", password: "")
 # repo = github.repository("joseivanlopez/hello_world")
 # master = github.branch("joseivanlopez/hello_world", "master")
 # master_sha = master.commit.sha
@@ -22,6 +21,12 @@ github = Octokit::Client.new(login: "joseivanlopez", password: "")
 
 repo = "joseivanlopez/hello_world"
 branch_name = "testing2"
+
+github = Y2Dev::Github.login
+
+require "byebug"; byebug
+
+
 prs = []
 
 pr = github.create_pull_request(repo, "master", branch_name, "Bump version",
