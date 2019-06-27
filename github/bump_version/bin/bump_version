@@ -24,6 +24,14 @@ branch_name = "testing2"
 
 github = Y2Dev::Github.login
 
+# master = github.client.branch(repo, "master")
+# contents = github.client.contents(repo, ref: "master", path: "src")
+
+repos = github.repositories
+repo = repos.find { |r| r.name == "hello_world" }
+file = repo.file("src/*.rb")
+# content = repo.content(file)
+
 require "byebug"; byebug
 
 
@@ -36,7 +44,6 @@ prs << pr.html_url
 
 require "byebug"; byebug
 
-master = github.branch(repo, "master")
 last_commit = master.commit
 
 # github.create_ref(repo, "heads/#{branch_name}", last_commit.sha)

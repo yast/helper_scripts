@@ -1,4 +1,5 @@
 require "octokit"
+require "y2dev/github/user"
 require "y2dev/github/repository"
 
 module Y2Dev
@@ -13,8 +14,12 @@ module Y2Dev
 
     attr_reader :client
 
-    def repositories
-      client.repositories.map { |r| Repository.new(client, r) }
+    attr_reader :user
+
+    def repositories(user = nil)
+      user ||= self.user.login
+
+      client.repositories(user).map { |r| Repository.new(self, r) }
     end
 
   private
@@ -35,7 +40,8 @@ module Y2Dev
 
     def initialize(login_options)
       @client = Octokit::Client.new(login_options)
-      @client.auto_paginate = true
+      # @client.auto_paginate = true
+      @user = User.new(self, client.user)
     end
   end
 end
