@@ -227,7 +227,7 @@ do
         ;;
     libyui) MODDIRNAME=${M}
         ;;
-    y2r) MODDIRNAME=${M}
+    y2r|skelcd*|rub*|zombie*|yast*|docker*|blog|burndown|patterns*|system*|travis*|ci*|auto*|aytest*|helper*|YaST*|os*) MODDIRNAME=${M}
         ORG="yast"
 	;;
     ruby) MODDIRNAME=${M}
