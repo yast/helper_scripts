@@ -1,0 +1,16 @@
+---
+feedback:
+  description: Discussion or proposal (not a bug)
+  color: 19C3F9
+
+needinfo:
+  description: More details are needed from the reporter
+  color: FF66FF
+
+other-maintainer:
+  description: Not maintained by the core YaST team
+  color: A1A0FA
+
+tracked:
+  description: Tracked elsewhere (Bugzilla, Jira, Trello)
+  color: CAE36D
