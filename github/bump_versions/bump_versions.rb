@@ -20,16 +20,33 @@ require "bundler/setup"
 
 require "octokit"
 
-DRY_RUN = ENV["DRY_RUN"]
+############# start of editable values ############
 
 # new package version
 NEW_PACKAGE_VERSION = "4.4.0".freeze
-# for checking whether the version has been already bumped
-NEW_PACKAGE_PREFIX = NEW_PACKAGE_VERSION[0..-2]
-
 # some packages use distro based version
 NEW_DISTRO_VERSION = "15.4.0".freeze
+# author + email, written into the changes files
+AUTHOR = "Ladislav Slezák <lslezak@suse.cz>".freeze
+# change only packages which have this branch defined
+GIT_BRANCH = "SLE-15-SP3".freeze
+# bug number used in changes
+BUG_NR = "1185510".freeze
+
+############# end of editable values ############
+
+# do not change the
+DRY_RUN = ENV["DRY_RUN"]
+
+# for checking whether the version has been already bumped
+NEW_PACKAGE_PREFIX = NEW_PACKAGE_VERSION[0..-2]
+# prefix of the distro version
 NEW_DISTRO_PREFIX = NEW_DISTRO_VERSION[0..-2].freeze
+
+# the major version prefix of the package version
+NEW_MAJOR_PACKAGE_VERSION = NEW_PACKAGE_VERSION.split(".").first + "."
+# the major version prefix of the distro version
+NEW_MAJOR_DISTRO_VERSION = NEW_DISTRO_VERSION.split(".").first + "."
 
 # subdirectory where to clone Git repositories
 GIT_CHECKOUT_DIR = "github".freeze
@@ -41,6 +58,13 @@ EXCLUDE_REPOS = [
   # these are bound to the SUSE Manager version, not the SLE version
   "skelcd-control-suse-manager-proxy",
   "skelcd-control-suse-manager-server"
+].freeze
+
+# these repositories are openSUSE Leap only (not in SLE)
+EXTRA_REPOS = [
+  "yast-alternatives",
+  "yast-docker",
+  "yast-slp-server"
 ].freeze
 
 def spec_files
@@ -59,7 +83,7 @@ end
 def set_version(version)
   spec_files.each do |spec_file|
     spec = File.read(spec_file)
-    spec.gsub!(/^\s*Version:.*$/, "Version:        #{version}")
+    spec.gsub!(/^(\s*)Version:(\s*).*$/, "\1Version:\2#{version}")
     File.write(spec_file, spec)
   end
 end
@@ -69,9 +93,9 @@ TIME_ENTRY = Time.now.utc.strftime("%a %b %d %T UTC %Y")
 def update_changes(version)
   entry = <<EOF
 -------------------------------------------------------------------
-#{TIME_ENTRY} - Ladislav Slezák <lslezak@suse.cz>
+#{TIME_ENTRY} - #{AUTHOR}
 
-- #{version}
+- #{version} (#bsc#{BUG_NR})
 
 EOF
 
@@ -131,7 +155,7 @@ git_repos.each do |repo|
   if !File.directory?(checkout_dir)
     branches = github.branches(repo.full_name)
     # check only the SP3 packages
-    next unless branches.map(&:name).include?("SLE-15-SP3")
+    next if !branches.map(&:name).include?(GIT_BRANCH) && !EXTRA_REPOS.include?(repo.name)
 
     system("git clone #{repo.ssh_url} #{checkout_dir}")
   end
@@ -151,12 +175,15 @@ git_repos.each do |repo|
     end
 
     # it uses some different versioning, rather do not touch it
-    unless versions.all? { |v| v.start_with?("4.") || v.start_with?("15.") }
+    unless versions.all? do |v|
+             v.start_with?(NEW_MAJOR_PACKAGE_VERSION, NEW_MAJOR_DISTRO_VERSION)
+           end
+
       puts "Skipping: #{repo.name}-#{versions.join(",")}"
       next
     end
 
-    new_version = versions.any? { |v| v.start_with?("15.") } ? NEW_DISTRO_VERSION : NEW_PACKAGE_VERSION
+    new_version = versions.any? { |v| v.start_with?(NEW_MAJOR_DISTRO_VERSION) } ? NEW_DISTRO_VERSION : NEW_PACKAGE_VERSION
     puts "Updating #{repo.name} from #{versions.join(",")} to #{new_version}..."
 
     next if DRY_RUN
