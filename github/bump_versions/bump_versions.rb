@@ -83,7 +83,7 @@ end
 def set_version(version)
   spec_files.each do |spec_file|
     spec = File.read(spec_file)
-    spec.gsub!(/^(\s*)Version:(\s*).*$/, "\1Version:\2#{version}")
+    spec.gsub!(/^(\s*)Version:(\s*).*$/, "\\1Version:\\2#{version}")
     File.write(spec_file, spec)
   end
 end
@@ -174,11 +174,12 @@ git_repos.each do |repo|
       next
     end
 
-    # it uses some different versioning, rather do not touch it
-    unless versions.all? do |v|
-             v.start_with?(NEW_MAJOR_PACKAGE_VERSION, NEW_MAJOR_DISTRO_VERSION)
-           end
+    expected_versioning = versions.all? do |v|
+      v.start_with?(NEW_MAJOR_PACKAGE_VERSION, NEW_MAJOR_DISTRO_VERSION)
+    end
 
+    # it uses some different versioning, rather do not touch it
+    unless expected_versioning
       puts "Skipping: #{repo.name}-#{versions.join(",")}"
       next
     end
