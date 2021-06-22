@@ -7,7 +7,7 @@
 # create your token at https://github.com/settings/tokens/new.
 # Pass the token via "GH_TOKEN" environment variable or via ~/.netrc file,
 # see https://github.com/octokit/octokit.rb#authentication
-# 
+#
 # Links:
 #  http://octokit.github.io/octokit.rb/Octokit/Client/Labels.html
 #  https://docs.github.com/en/rest/reference/issues#create-a-label
@@ -62,7 +62,7 @@ git_repos.each do |repo|
     next if repo_labels.include?(label)
 
     puts "Creating label \"#{label}\" in repository #{repo.name}..."
-    github.add_label(repo.full_name, label, data["color"], { description: data["description"]})
+    github.add_label(repo.full_name, label, data["color"], description: data["description"])
     created += 1
   end
 end
