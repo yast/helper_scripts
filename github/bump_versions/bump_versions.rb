@@ -80,7 +80,7 @@ def read_version
 end
 
 # set the new version in the spec files(s)
-def set_version(version)
+def update_version(version)
   spec_files.each do |spec_file|
     spec = File.read(spec_file)
     spec.gsub!(/^(\s*)Version:(\s*).*$/, "\\1Version:\\2#{version}")
@@ -165,7 +165,7 @@ git_repos.each do |repo|
 
     # already at the requested version
     next if versions.all? do |v|
-      v.start_with?(NEW_PACKAGE_PREFIX) || v.start_with?(NEW_DISTRO_PREFIX)
+      v.start_with?(NEW_PACKAGE_PREFIX, NEW_DISTRO_PREFIX)
     end
 
     # not a semantic version name (e.g. a date based version like "20210903")
@@ -184,12 +184,17 @@ git_repos.each do |repo|
       next
     end
 
-    new_version = versions.any? { |v| v.start_with?(NEW_MAJOR_DISTRO_VERSION) } ? NEW_DISTRO_VERSION : NEW_PACKAGE_VERSION
+    new_version = if versions.any? { |v| v.start_with?(NEW_MAJOR_DISTRO_VERSION) }
+      NEW_DISTRO_VERSION
+    else
+      NEW_PACKAGE_VERSION
+    end
+
     puts "Updating #{repo.name} from #{versions.join(",")} to #{new_version}..."
 
     next if DRY_RUN
 
-    set_version(new_version)
+    update_version(new_version)
     update_changes(new_version)
     system("git commit -a -m \"Bump version to #{new_version}\"")
     github.unprotect_branch(repo.full_name, "master")
