@@ -27,6 +27,7 @@ def run_on_tw(content, job)
     # (: starts a non-capturing group
     # (?! is a negative lookahead assertion
     # https://ruby-doc.org/core-2.5.0/Regexp.html#class-Regexp-label-Anchors
+    # (Next time try a simpler lazy match, #{job}:.*?distro:
     /(#{job}:(?:(?!distro).)*distro: )[^\n]*\n/m,
     "\\1 [ \"tumbleweed\", \"leap_latest\" ]\n"
   )
