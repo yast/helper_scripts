@@ -23,6 +23,10 @@ end
 
 def run_on_tw(content, job)
   content.gsub!(
+    # (?:(?!distro).)* = anything except "distro", this is a non-greedy version of .*
+    # (: starts a non-capturing group
+    # (?! is a negative lookahead assertion
+    # https://ruby-doc.org/core-2.5.0/Regexp.html#class-Regexp-label-Anchors
     /(#{job}:(?:(?!distro).)*distro: )[^\n]*\n/m,
     "\\1 [ \"tumbleweed\", \"leap_latest\" ]\n"
   )
