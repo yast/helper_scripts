@@ -41,6 +41,17 @@ def gh_repos(client, org)
   git_repos
 end
 
+# GitHub branch protection options - require PR reviews also for the admins
+# https://octokit.github.io/octokit.rb/Octokit/Client/Repositories.html#protect_branch-instance_method
+# https://docs.github.com/en/rest/reference/repos#update-branch-protection
+BRANCH_PROTECTION = {
+  "enforce_admins"                => true,
+  "required_pull_request_reviews" => {
+    "require_code_owner_reviews" => true,
+    "include_admins"             => true
+  }
+}
+
 def with_unprotected(client, repo, branch, &block)
   return unless block_given?
 
@@ -49,18 +60,7 @@ def with_unprotected(client, repo, branch, &block)
   begin
     block.call
   ensure
-    # GitHub branch protection options - require PR reviews also for the admins
-    # https://octokit.github.io/octokit.rb/Octokit/Client/Repositories.html#protect_branch-instance_method
-    # https://docs.github.com/en/rest/reference/repos#update-branch-protection
-    options = {
-      "enforce_admins"                => true,
-      "required_pull_request_reviews" => {
-        "require_code_owner_reviews" => true,
-        "include_admins"             => true
-      }
-    }
-
-    client.protect_branch(repo, branch, options)
+    client.protect_branch(repo, branch, BRANCH_PROTECTION)
   end
 end
 
