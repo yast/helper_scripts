@@ -1,0 +1,61 @@
+# Use this file to configure the Overcommit hooks you wish to use. This will
+# extend the default configuration defined in:
+# https://github.com/sds/overcommit/blob/master/config/default.yml
+#
+# At the topmost level of this YAML file is a key representing type of hook
+# being run (e.g. pre-commit, commit-msg, etc.). Within each type you can
+# customize each hook, such as whether to only run it on certain files (via
+# `include`), whether to only display output if it fails (via `quiet`), etc.
+#
+# For a complete list of hooks, see:
+# https://github.com/sds/overcommit/tree/master/lib/overcommit/hook
+#
+# For a complete list of options that you can use to customize hooks, see:
+# https://github.com/sds/overcommit#configuration
+#
+
+# Check the commit message
+CommitMsg:
+  SpellCheck:
+    enabled: true
+    # force using the English dictionary
+    env:
+      LC_ALL: en_US.UTF-8
+  TextWidth:
+    enabled: true
+    # longer subject (the default is 60)
+    max_subject_width: 80
+    # longer body lines (the default is 72)
+    max_body_width: 100
+
+PreCommit:
+  # do not commit directly to these branches, use Pull Requests!
+  ForbiddenBranches:
+    enabled: true
+    branch_patterns:
+      - master
+      - openSUSE-[0-9]+_[0-9]+
+      - SLE-10
+      - SLE-10-SP[0-9]+
+      - Code-11
+      - Code-11-SP[0-9]+
+      - SLE-[0-9]+-GA
+      - SLE-[0-9]+-SP[0-9]+
+<% if @add_rubocop %>
+  RuboCop:
+    enabled: true
+    # do not pass the RuboCop default parameters to rake, that does not work...
+    flags: []
+    # use a rake task to call the right Rubocop version
+    command: ["rake", "check:rubocop"]
+<% end %>
+<% if @test_command %>
+
+PrePush:
+  RSpec:
+    enabled: true
+    command: <%= @test_command.inspect %>
+    # force English, don't fail because of translations
+    env:
+      LC_ALL: en_US.UTF-8
+<% end %>
