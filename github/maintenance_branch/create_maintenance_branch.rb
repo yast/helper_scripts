@@ -156,7 +156,7 @@ def update_changes(version)
 -------------------------------------------------------------------
 #{TIME_ENTRY} - #{AUTHOR}
 
-- Bump version to #{version} (#bsc#{BUG_NR})
+- Bump version to #{version} (bsc##{BUG_NR})
 
 EOF
 
