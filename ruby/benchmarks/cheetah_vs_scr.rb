@@ -39,15 +39,14 @@ end
 
 puts "Number of calls: #{CALLS}"
 
+command = [ "/usr/bin/systemctl", "--plain", "--full", "--no-legend",
+  "--no-pager", "--no-ask-password", "list-units", "--all", "--type=target" ]
+
 measure("Cheetah") do
-  Cheetah.run("/usr/bin/systemctl", "--plain", "--full", "--no-legend",
-    "--no-pager", "--no-ask-password",
-    "list-units", "--all", "--type=target",
-    *cheetah_opts)
+  Cheetah.run(*command, *cheetah_opts)
 end
 
 measure("SCR") do
   Yast::SCR.Execute(".target.bash_output",
-    "LANG=C TERM=dumb COLUMNS=1024 /usr/bin/systemctl --plain --full " \
-    "--no-legend --no-pager --no-ask-password list-units --all --type=target")
+    ENV_VARS.map{|k, v| "#{k}=#{v}"}.join(" ") + " " + command.join(" "))
 end
