@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 
 # install missing gems
 if !File.exist?("./.vendor")
@@ -21,10 +22,10 @@ def gh_client
     # see https://github.com/octokit/octokit.rb#authentication
     { netrc: true }
   else
-    $stderr.puts "Error: The Github access token is not set."
-    $stderr.puts "Pass it via the 'GH_TOKEN' environment variable"
-    $stderr.puts "or write it to the ~/.netrc file."
-    $stderr.puts "See https://github.com/octokit/octokit.rb#using-a-netrc-file"
+    warn "Error: The Github access token is not set."
+    warn "Pass it via the 'GH_TOKEN' environment variable"
+    warn "or write it to the ~/.netrc file."
+    warn "See https://github.com/octokit/octokit.rb#using-a-netrc-file"
     exit 1
   end
 

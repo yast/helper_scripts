@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 # This script enables GitHub branch protection for all maintenance branches.
 #
@@ -14,7 +15,7 @@
 
 # the GitHub organization, all organization repos will be processed
 # if you want to touch only some of them then write some filtering code
-GH_ORG = "yast".freeze
+GH_ORG = "yast"
 
 # install missing gems
 if !File.exist?("./.vendor")
@@ -37,10 +38,10 @@ elsif File.exist?(netrc) && File.read(netrc).match(/^machine api.github.com/)
   # see https://github.com/octokit/octokit.rb#authentication
   { netrc: true }
 else
-  $stderr.puts "Error: The Github access token is not set."
-  $stderr.puts "Pass it via the 'GH_TOKEN' environment variable"
-  $stderr.puts "or write it to the ~/.netrc file."
-  $stderr.puts "See https://github.com/octokit/octokit.rb#using-a-netrc-file"
+  warn "Error: The Github access token is not set."
+  warn "Pass it via the 'GH_TOKEN' environment variable"
+  warn "or write it to the ~/.netrc file."
+  warn "See https://github.com/octokit/octokit.rb#using-a-netrc-file"
   exit 1
 end
 
@@ -109,10 +110,12 @@ results = Parallel.map(repo_names) do |repo|
   puts "Checking #{full_repo_name} branches..."
   # special accept header is required to get the branch protection status
   # (see https://developer.github.com/v3/repos/branches/#list-branches)
-  branches = github.branches(full_repo_name, accept: "application/vnd.github.luke-cage-preview+json")
+  branches = github.branches(full_repo_name,
+    accept: "application/vnd.github.luke-cage-preview+json")
 
   branches.reduce(0) do |counter, branch|
-    next counter if branch["protected"] || !TO_PROTECT.any? { |r| branch["name"] =~ r }
+    next counter if branch["protected"] || TO_PROTECT.none? { |r| branch["name"] =~ r }
+
     puts "  #{full_repo_name}: protecting branch #{branch["name"]}..."
     github.protect_branch(full_repo_name, branch["name"], options)
     counter + 1

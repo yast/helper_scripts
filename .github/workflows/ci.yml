@@ -27,6 +27,5 @@ jobs:
       run: rpm -qa | sort
 
     - name: Rubocop
-      # the older Rubocop is still used here...
-      run: rubocop-0.41.2
+      run: rubocop-1.24.1
 

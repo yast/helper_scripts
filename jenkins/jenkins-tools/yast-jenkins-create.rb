@@ -1,4 +1,6 @@
 #! /usr/bin/env ruby
+# frozen_string_literal: true
+
 require "fileutils"
 require "yaml"
 require "english"
@@ -8,14 +10,14 @@ require "english"
 # modify `config.xml` if needed ( git path will be automatic modify )
 # modify JOB_NAME_PATTERN before use to specify pattern of job to delete
 
-conf = YAML.load(File.read("jenkins.yml"))
+conf = YAML.safe_load(File.read("jenkins.yml"))
 USER = conf["username"]
 PWD  = conf["password"]
-URL_BASE = "https://#{USER}:#{PWD}@ci.suse.de".freeze
+URL_BASE = "https://#{USER}:#{PWD}@ci.suse.de"
 puts URL_BASE.inspect
 
 # %s is replaced by arguments passed to program
-JOB_NAME_PATTERN = "yast-%s-master".freeze
+JOB_NAME_PATTERN = "yast-%s-master"
 
 ARGV.each do |mod|
   # test if module already exist

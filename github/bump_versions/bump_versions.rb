@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 # This script bumps the version in all YaST packages
 #
@@ -7,7 +8,7 @@
 #
 
 # the GitHub organization
-GH_ORG = "yast".freeze
+GH_ORG = "yast"
 
 # install missing gems
 if !File.exist?("./.vendor")
@@ -23,15 +24,15 @@ require "octokit"
 ############# start of editable values ############
 
 # new package version
-NEW_PACKAGE_VERSION = "4.4.0".freeze
+NEW_PACKAGE_VERSION = "4.4.0"
 # some packages use distro based version
-NEW_DISTRO_VERSION = "15.4.0".freeze
+NEW_DISTRO_VERSION = "15.4.0"
 # author + email, written into the changes files
-AUTHOR = "Ladislav Slezák <lslezak@suse.cz>".freeze
+AUTHOR = "Ladislav Slezák <lslezak@suse.cz>"
 # change only packages which have this branch defined
-GIT_BRANCH = "SLE-15-SP3".freeze
+GIT_BRANCH = "SLE-15-SP3"
 # bug number used in changes
-BUG_NR = "1185510".freeze
+BUG_NR = "1185510"
 
 ############# end of editable values ############
 
@@ -49,7 +50,7 @@ NEW_MAJOR_PACKAGE_VERSION = NEW_PACKAGE_VERSION.split(".").first + "."
 NEW_MAJOR_DISTRO_VERSION = NEW_DISTRO_VERSION.split(".").first + "."
 
 # subdirectory where to clone Git repositories
-GIT_CHECKOUT_DIR = "github".freeze
+GIT_CHECKOUT_DIR = "github"
 
 # skip these repositories
 EXCLUDE_REPOS = [
@@ -91,13 +92,13 @@ end
 TIME_ENTRY = Time.now.utc.strftime("%a %b %d %T UTC %Y")
 
 def update_changes(version)
-  entry = <<EOF
--------------------------------------------------------------------
-#{TIME_ENTRY} - #{AUTHOR}
+  entry = <<~ENTRY
+    -------------------------------------------------------------------
+    #{TIME_ENTRY} - #{AUTHOR}
 
-- #{version} (#bsc#{BUG_NR})
+    - #{version} (#bsc#{BUG_NR})
 
-EOF
+  ENTRY
 
   Dir.glob("package/*.changes").each do |changes_file|
     changes = File.read(changes_file)
@@ -117,10 +118,10 @@ def create_client
     # see https://github.com/octokit/octokit.rb#authentication
     { netrc: true }
   else
-    $stderr.puts "Error: The Github access token is not set."
-    $stderr.puts "Pass it via the 'GH_TOKEN' environment variable"
-    $stderr.puts "or write it to the ~/.netrc file."
-    $stderr.puts "See https://github.com/octokit/octokit.rb#using-a-netrc-file"
+    warn "Error: The Github access token is not set."
+    warn "Pass it via the 'GH_TOKEN' environment variable"
+    warn "or write it to the ~/.netrc file."
+    warn "See https://github.com/octokit/octokit.rb#using-a-netrc-file"
     exit 1
   end
 
@@ -149,6 +150,7 @@ options = {
 
 git_repos.each do |repo|
   next if EXCLUDE_REPOS.include?(repo.name)
+
   # where to checkout the Git repository
   checkout_dir = File.join(GIT_CHECKOUT_DIR, repo.name)
 

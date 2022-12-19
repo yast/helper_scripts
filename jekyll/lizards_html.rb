@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # parsing HTML
 require "nokogiri"
 # URL parsing
@@ -63,12 +65,12 @@ class LizardsHtmlImporter
 
   def self.emoji(img, code)
     "<img src=\"https://s.w.org/images/core/emoji/72x72/#{img}.png\" " \
-    "alt=\"&#x#{code};\" class=\"wp-smiley\" style=\"height: 1em; max-height: 1em;\" />"
+      "alt=\"&#x#{code};\" class=\"wp-smiley\" style=\"height: 1em; max-height: 1em;\" />"
   end
 
   def self.emoji2(img, code)
     "<img src=\"https://s.w.org/images/core/emoji/2/72x72/#{img}.png\" " \
-    "alt=\"&#x#{code};\" class=\"wp-smiley\" style=\"height: 1em; max-height: 1em;\" />"
+      "alt=\"&#x#{code};\" class=\"wp-smiley\" style=\"height: 1em; max-height: 1em;\" />"
   end
 
   # simple&stupid emoji replacement, we used just few emoticons
@@ -97,7 +99,7 @@ class LizardsHtmlImporter
   def download_and_replace_tag(tree, download_dir, tag, attribute)
     # replace only URLs pointing to an uploaded content
     tree.xpath(".//#{tag}[contains(@#{attribute},\"//lizards.opensuse.org/wp-content/uploads\")]")
-        .each do |node|
+      .each do |node|
       src = node.attribute(attribute).value
       # add HTTPS if there is no protocol
       src = "https:#{src}" if src.start_with?("//")
@@ -112,7 +114,7 @@ class LizardsHtmlImporter
         # use relative path so it does not depend on the root location
         node.attribute(attribute).value = "../../../../#{file}"
       else
-        $stderr.puts "Unknown protocol in URL: #{src}"
+        warn "Unknown protocol in URL: #{src}"
       end
 
       attributes_cleanup(node)
@@ -129,11 +131,11 @@ class LizardsHtmlImporter
 
   def yaml_header(item)
     header = {
-      # Note: 'description' is not present in HTML
+      # NOTE: 'description' is not present in HTML
       "layout"   => "post",
       "date"     => post_date(item),
       "title"    => post_title(item),
-      # Note: the categories and tags must be fixed manually
+      # NOTE: the categories and tags must be fixed manually
       # both are mixed into a single list
       "category" => post_tags(item),
       "tags"     => post_tags(item)

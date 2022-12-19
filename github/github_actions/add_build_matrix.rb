@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 # This script adds a build matrix
 #
@@ -9,13 +10,13 @@
 require_relative "gh_helpers"
 
 # the GitHub organization
-GH_ORG = "yast".freeze
+GH_ORG = "yast"
 
 # optionally do not confirm the changes
 CONFIRM = ENV["CONFIRM"] != "0"
 
 # subdirectory where to clone Git repositories
-GIT_CHECKOUT_DIR = "github".freeze
+GIT_CHECKOUT_DIR = "github"
 
 def workflow_files
   Dir.glob(".github/workflows/*.yml") + Dir.glob(".github/workflows/*.yaml")
@@ -36,7 +37,7 @@ end
 def modify_workflow(content)
   new_content = content.dup
 
-  snippet = <<-EOT.chomp
+  snippet = <<-SNIPPET.chomp
 
     strategy:
       fail-fast: false
@@ -45,18 +46,18 @@ def modify_workflow(content)
 
     container:
       image: registry.opensuse.org/yast/head/containers_${{matrix.distro}}/yast-ruby
-EOT
+  SNIPPET
 
   new_content.gsub!(
     /^\s*container:\n*\s*image:\s*registry\.opensuse\.org\/yast\/head\/containers\/yast-ruby:latest/,
     snippet
   )
 
-  snippet = <<-EOT.chomp
+  snippet = <<-SNIPPET.chomp
       # send it only from the TW build to avoid duplicate submits
       if: ${{ matrix.distro == 'tumbleweed' }}
       uses: coverallsapp/github-action@master
-EOT
+  SNIPPET
 
   new_content.gsub!(
     /^\s*uses: coverallsapp\/github-action@master/,

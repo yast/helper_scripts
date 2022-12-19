@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 # This script creates a new label at Github which can be used for labeling
 # issues and pull requests.
@@ -19,8 +20,8 @@ require "bundler/setup"
 require "octokit"
 
 if !ENV["GH_TOKEN"]
-  $stderr.puts "Error: The Github access token is not set."
-  $stderr.puts "Pass it via the 'GH_TOKEN' environment variable."
+  warn "Error: The Github access token is not set."
+  warn "Pass it via the 'GH_TOKEN' environment variable."
   exit 1
 end
 
@@ -37,6 +38,7 @@ loop do
   $stdout.flush
   repos = github.repos("yast", page: page)
   break if repos.empty?
+
   git_repos.concat(repos)
   page += 1
 end
@@ -44,8 +46,8 @@ end
 puts "\nFound #{git_repos.size} Git repositories"
 
 # add a label for each repo
-LABEL = "blog".freeze
-COLOR = "fbca04".freeze
+LABEL = "blog"
+COLOR = "fbca04"
 
 repo_names = git_repos.map { |git_repo| git_repo["name"] }
 
@@ -54,12 +56,12 @@ repo_names.each do |repo|
   full_repo_name = "yast/#{repo}"
   labels = github.labels(full_repo_name).map { |h| h["name"] }
 
-  if !labels.include?(LABEL)
+  if labels.include?(LABEL)
+    puts "Repository #{repo} already contains the label"
+  else
     puts "Creating 'blog' label in repository: #{repo}"
     github.add_label(full_repo_name, LABEL, COLOR)
     created += 1
-  else
-    puts "Repository #{repo} already contains the label"
   end
 end
 

@@ -1,4 +1,5 @@
 #! /usr/bin/env ruby
+# frozen_string_literal: true
 
 require "yast"
 require "yast/y2start_helpers"
@@ -9,7 +10,7 @@ ENV_VARS = {
   "LANG"    => "C",
   "TERM"    => "dumb",
   "COLUMNS" => "1024"
-}
+}.freeze
 
 # number of calls to do to have more reliable results
 CALLS = 1000
@@ -39,8 +40,8 @@ end
 
 puts "Number of calls: #{CALLS}"
 
-command = [ "/usr/bin/systemctl", "--plain", "--full", "--no-legend",
-  "--no-pager", "--no-ask-password", "list-units", "--all", "--type=target" ]
+command = ["/usr/bin/systemctl", "--plain", "--full", "--no-legend",
+           "--no-pager", "--no-ask-password", "list-units", "--all", "--type=target"]
 
 measure("Cheetah") do
   Cheetah.run(*command, *cheetah_opts)
@@ -48,5 +49,5 @@ end
 
 measure("SCR") do
   Yast::SCR.Execute(".target.bash_output",
-    ENV_VARS.map{|k, v| "#{k}=#{v}"}.join(" ") + " " + command.join(" "))
+    ENV_VARS.map { |k, v| "#{k}=#{v}" }.join(" ") + " " + command.join(" "))
 end

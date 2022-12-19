@@ -1,4 +1,6 @@
 #! /usr/bin/env ruby
+# frozen_string_literal: true
+
 require "fileutils"
 require "yaml"
 
@@ -7,14 +9,14 @@ require "yaml"
 # modify `config.xml` if needed ( git path will be automatic modify )
 # modify JOB_NAME_PATTERN before use to specify pattern of job to delete
 
-conf = YAML.load(File.read("jenkins.yml"))
+conf = YAML.safe_load(File.read("jenkins.yml"))
 USER = conf["username"]
 PWD  = conf["password"]
 
 # %s is replaced by arguments passed to program
-JOB_NAME_PATTERN = "yast-%s-master".freeze
+JOB_NAME_PATTERN = "yast-%s-master"
 
-URL_BASE = "https://#{USER}:#{PWD}@ci.opensuse.org".freeze
+URL_BASE = "https://#{USER}:#{PWD}@ci.opensuse.org"
 # URL_BASE = "http://river.suse.de"
 
 # modules that do not follow yast-{mod} convention
@@ -40,7 +42,7 @@ ARGV.each do |mod|
 
   # adress found from https://ci.opensuse.org/api
   cmd = "curl -X POST #{URL_BASE}/job/#{JOB_NAME_PATTERN % mod}/config.xml " \
-    "--header \"Content-Type:application/xml\" -d @config.xml.tmp"
+        "--header \"Content-Type:application/xml\" -d @config.xml.tmp"
   puts "Sending data for module #{git_name} with #{cmd}"
   res = `#{cmd}`
   puts "ERROR: curl exited with non-zero value" if $CHILD_STATUS.exitstatus != 0

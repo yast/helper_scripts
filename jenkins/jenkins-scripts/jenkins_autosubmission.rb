@@ -1,4 +1,5 @@
 #! /usr/bin/env ruby
+# frozen_string_literal: true
 
 # This is a helper script which enables/disables all YaST Jenkins jobs.
 # It is run from a separate job.
@@ -31,7 +32,8 @@ class CommandLineOptions
     options = new
 
     OptionParser.new do |parser|
-      parser.on("-u", "--url [URL]", URI, "URL of the Jenkins server (should include a view)") do |u|
+      parser.on("-u", "--url [URL]", URI,
+        "URL of the Jenkins server (should include a view)") do |u|
         options.url = u
       end
 
@@ -79,7 +81,7 @@ class JenkinsJob
 
     jobs.each_with_object([]) do |j, arr|
       next if !j["name"].match(/\Ayast-.*-#{Regexp.escape(branch)}\z/) ||
-          j["name"].start_with?("yast-ci-")
+        j["name"].start_with?("yast-ci-")
 
       arr << new(URI(j["url"]), j["name"], j["color"])
     end
@@ -103,7 +105,7 @@ class JenkinsJob
     response = http.request(request)
     success = response.is_a?(Net::HTTPFound)
 
-    $stderr.puts "ERROR: Changing job #{name} failed!" unless success
+    warn "ERROR: Changing job #{name} failed!" unless success
 
     success
   end
@@ -122,9 +124,9 @@ begin
   puts "Done"
   exit ret
 rescue CommandLineError, OptionParser::InvalidOption => e
-  $stderr.puts "ERROR: #{e.message}"
+  warn "ERROR: #{e.message}"
   exit 1
-rescue => e
-  $stderr.puts "ERROR: #{e.message} #{e.backtrace}"
+rescue StandardError => e
+  warn "ERROR: #{e.message} #{e.backtrace}"
   exit 1
 end
