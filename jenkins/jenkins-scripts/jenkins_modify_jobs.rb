@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 # This script modifies the YaST job configurations globally.
 #
@@ -17,7 +18,7 @@ jenkins_jobs = jenkins.job.list_all.select { |j| j.start_with?("yast-") }
 puts "Found #{jenkins_jobs.size} jobs"
 
 new_xml = "<hudson.triggers.SCMTrigger><spec># everyday some time between 1:00AM and 2:59AM\n" \
-  "H H(1-2) * * *</spec></hudson.triggers.SCMTrigger>"
+          "H H(1-2) * * *</spec></hudson.triggers.SCMTrigger>"
 new_node = REXML::Document.new(new_xml).root
 
 jenkins_jobs.each_with_index do |job, index|

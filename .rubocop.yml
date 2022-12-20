@@ -1,11 +1,32 @@
 # use the shared Yast defaults
 inherit_from:
-  /usr/share/YaST2/data/devtools/data/rubocop_yast_style.yml
+  /usr/share/YaST2/data/devtools/data/rubocop-1.24.1_yast_style.yml
 
 AllCops:
   Exclude:
     - '/**/vendor/**/*'
 
-Metrics/LineLength:
+Layout/LineLength:
   Max: 110
+  Exclude:
+    - ruby/scan_kwoptargs/scan_keyword_arguments.rb
 
+Metrics/BlockLength:
+  Exclude:
+    - github/bump_versions/bump_versions.rb
+
+Metrics/AbcSize:
+  Exclude:
+    - ruby/scan_kwoptargs/scan_keyword_arguments.rb
+
+Metrics/CyclomaticComplexity:
+  Exclude:
+    - ruby/scan_kwoptargs/scan_keyword_arguments.rb
+
+Metrics/PerceivedComplexity:
+  Exclude:
+    - ruby/scan_kwoptargs/scan_keyword_arguments.rb
+
+Style/GuardClause:
+  Exclude:
+    - ruby/scan_kwoptargs/scan_keyword_arguments.rb

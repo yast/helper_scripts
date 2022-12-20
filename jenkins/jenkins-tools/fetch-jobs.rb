@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 #
 # This script get jobs configurations. It relies on jenkins_api_client gem
 # instead of Jenkins Java CLI, so it's quiet fast.
@@ -11,7 +13,7 @@
 begin
   require "jenkins_api_client"
 rescue LoadError
-  STDERR.puts "You need to install rubygem-jenkins_api_client package"
+  warn "You need to install rubygem-jenkins_api_client package"
   exit 1
 end
 require "yaml"

@@ -1,21 +1,22 @@
+# frozen_string_literal: true
 
-JENKINS_URL = "https://ci.opensuse.org".freeze
+JENKINS_URL = "https://ci.opensuse.org"
 
 def check_credentials
-  if !ENV["JENKINS_USER"] || !ENV["JENKINS_PASSWORD"]
-    $stderr.puts "Error: The jenkins credentials are not set."
-    $stderr.puts "Pass them via the 'JENKINS_USER' and 'JENKINS_PASSWORD' " \
-      "environment variables."
-    exit 1
-  end
+  return if ENV["JENKINS_USER"] && ENV["JENKINS_PASSWORD"]
+
+  warn "Error: The jenkins credentials are not set."
+  warn "Pass them via the 'JENKINS_USER' and 'JENKINS_PASSWORD' " \
+       "environment variables."
+  exit 1
 end
 
 def bundler_setup
   # install missing gems
-  if !File.exist?("./.vendor")
-    puts "Installing needed Rubygems to ./.vendor/bundle ..."
-    system("bundle install --path .vendor/bundle")
-  end
+  return if File.exist?("./.vendor")
+
+  puts "Installing needed Rubygems to ./.vendor/bundle ..."
+  system("bundle install --path .vendor/bundle")
 end
 
 def require_all

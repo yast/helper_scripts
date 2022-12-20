@@ -1,4 +1,5 @@
 #! /usr/bin/env ruby
+# frozen_string_literal: true
 
 # This script tries to find the places where the keyword arguments are passed
 # instead of a hash.

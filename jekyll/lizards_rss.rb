@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # parsing HTML
 require "nokogiri"
 # URL parsing
@@ -12,8 +14,8 @@ module JekyllImport
   module Importers
     # Specific lizards.o.o RSS importer
     class LizardsRSS < Importer
-      def self.specify_options(c)
-        c.option "source", "--source NAME", "The RSS file or URL to import"
+      def self.specify_options(config)
+        config.option "source", "--source NAME", "The RSS file or URL to import"
       end
 
       def self.validate(options)
@@ -21,7 +23,7 @@ module JekyllImport
       end
 
       def self.require_deps
-        JekyllImport.require_with_fallback(%w(rss rss/1.0 rss/2.0 open-uri fileutils safe_yaml))
+        JekyllImport.require_with_fallback(%w[rss rss/1.0 rss/2.0 open-uri fileutils safe_yaml])
       end
 
       # Process the import.
@@ -36,6 +38,7 @@ module JekyllImport
         rss = ::RSS::Parser.parse(content, false)
 
         raise "There doesn't appear to be any RSS items at the source (#{source}) provided." unless rss
+
         FileUtils.mkdir_p("_posts")
 
         rss.items.each do |item|
@@ -46,12 +49,12 @@ module JekyllImport
 
       def self.emoji(img, code)
         "<img src=\"https://s.w.org/images/core/emoji/72x72/#{img}.png\" " \
-        "alt=\"&#x#{code};\" class=\"wp-smiley\" style=\"height: 1em; max-height: 1em;\" />"
+          "alt=\"&#x#{code};\" class=\"wp-smiley\" style=\"height: 1em; max-height: 1em;\" />"
       end
 
       def self.emoji2(img, code)
         "<img src=\"https://s.w.org/images/core/emoji/2/72x72/#{img}.png\" " \
-        "alt=\"&#x#{code};\" class=\"wp-smiley\" style=\"height: 1em; max-height: 1em;\" />"
+          "alt=\"&#x#{code};\" class=\"wp-smiley\" style=\"height: 1em; max-height: 1em;\" />"
       end
 
       def self.import_post(item)
@@ -104,7 +107,7 @@ module JekyllImport
       def self.download_and_replace_tag(tree, download_dir, tag, attribute)
         # replace only URLs pointing to an uploaded content
         tree.xpath("//#{tag}[contains(@#{attribute},\"//lizards.opensuse.org/wp-content/uploads\")]")
-            .each do |node|
+          .each do |node|
           src = node.attribute(attribute).value
           # add HTTPS if there is no protocol
           src = "https:#{src}" if src.start_with?("//")
@@ -119,7 +122,7 @@ module JekyllImport
             # use relative path so it does not depend on the root location
             node.attribute(attribute).value = "../../../../#{file}"
           else
-            $stderr.puts "Unknown protocol in URL: #{src}"
+            warn "Unknown protocol in URL: #{src}"
           end
 
           attributes_cleanup(node)

@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 # This script creates labels at Github which can be used for labeling
 # issues and pull requests.
@@ -25,7 +26,7 @@ require "octokit"
 require "yaml"
 
 # the GitHub organization, all repositories from this organization will be processed
-GH_ORG = "yast".freeze
+GH_ORG = "yast"
 
 # use ~/.netrc ?
 netrc = File.join(Dir.home, ".netrc")
@@ -35,10 +36,10 @@ client_options = if ENV["GH_TOKEN"]
 elsif File.exist?(netrc) && File.read(netrc).match(/^machine api.github.com/)
   { netrc: true }
 else
-  $stderr.puts "Error: The Github access token is not set."
-  $stderr.puts "Pass it via the 'GH_TOKEN' environment variable"
-  $stderr.puts "or write it to the ~/.netrc file."
-  $stderr.puts "See https://github.com/octokit/octokit.rb#using-a-netrc-file"
+  warn "Error: The Github access token is not set."
+  warn "Pass it via the 'GH_TOKEN' environment variable"
+  warn "or write it to the ~/.netrc file."
+  warn "See https://github.com/octokit/octokit.rb#using-a-netrc-file"
   exit 1
 end
 
@@ -55,6 +56,7 @@ created = 0
 git_repos.each do |repo|
   # archived repos are read-only and cannot be modified
   next if repo.archived
+
   repo_labels = github.labels(repo.full_name).map(&:name)
 
   labels.each do |label, data|
