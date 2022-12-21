@@ -21,7 +21,7 @@ require "find"
 OVERCOMMIT_CFG = ".overcommit.yml"
 
 def install_overcommit(dir, template)
-  # skip if overcommit it is already present
+  # skip if overcommit is already present
   overcommit_file = File.join(dir, OVERCOMMIT_CFG)
   return if File.exist?(overcommit_file)
 
