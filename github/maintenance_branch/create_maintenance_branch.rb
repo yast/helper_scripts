@@ -46,6 +46,7 @@ TEXT
 
 # prefix for the Docker image name used in GitHub CI
 IMAGE_PATH="registry.opensuse.org/yast/sle-15/sp5/containers/"
+LIBYUI_IMAGE_PATH="registry.opensuse.org/devel/libraries/libyui/sle-15/sp5/containers/"
 
 ############# end of editable values ############
 
@@ -225,6 +226,11 @@ def modify_github_actions
     content.gsub!(
       "registry.opensuse.org/yast/head/containers/",
       IMAGE_PATH
+    )
+
+    content.gsub!(
+      "registry.opensuse.org/devel/libraries/libyui/containers/",
+      LIBYUI_IMAGE_PATH
     )
 
     # remove the build matrix
