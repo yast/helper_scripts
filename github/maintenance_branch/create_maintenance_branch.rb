@@ -35,7 +35,7 @@ GIT_OPENSUSE_NEW_BRANCH = "openSUSE-15_5".freeze
 BUG_NR = "1208913".freeze
 
 # Rakefile submit target
-SUBMIT_TARGET = "sle15sp5"
+SUBMIT_TARGET = "sle15sp5".freeze
 
 OBS_SUBMIT = <<TEXT
   conf.obs_api = "https://api.opensuse.org"
@@ -43,10 +43,11 @@ OBS_SUBMIT = <<TEXT
   conf.obs_sr_project = "openSUSE:Leap:15.5:Update"
   conf.obs_project = "YaST:openSUSE:15.5"
 TEXT
+  .freeze
 
 # prefix for the Docker image name used in GitHub CI
-IMAGE_PATH="registry.opensuse.org/yast/sle-15/sp5/containers/"
-LIBYUI_IMAGE_PATH="registry.opensuse.org/devel/libraries/libyui/sle-15/sp5/containers/"
+IMAGE_PATH = "registry.opensuse.org/yast/sle-15/sp5/containers/".freeze
+LIBYUI_IMAGE_PATH = "registry.opensuse.org/devel/libraries/libyui/sle-15/sp5/containers/".freeze
 
 ############# end of editable values ############
 
@@ -60,7 +61,8 @@ confirm_diff = false
 OptionParser.new do |opts|
   opts.banner = "Usage: #{$PROGRAM_NAME} [options]"
 
-  opts.on("-o", "--organization=ORGANIZATION", "GitHub organization (default \"yast\", optionally \"libyui\"") do |o|
+  opts.on("-o", "--organization=ORGANIZATION",
+    "GitHub organization (default \"yast\", optionally \"libyui\"") do |o|
     gh_organization = o
   end
 
@@ -158,13 +160,14 @@ end
 TIME_ENTRY = Time.now.utc.strftime("%a %b %d %T UTC %Y")
 
 def update_changes(version)
-  entry = <<EOF
--------------------------------------------------------------------
-#{TIME_ENTRY} - #{AUTHOR}
+  entry = <<~CHANGES
+    -------------------------------------------------------------------
+    #{TIME_ENTRY} - #{AUTHOR}
 
-- Bump version to #{version} (bsc##{BUG_NR})
+    - Bump version to #{version} (bsc##{BUG_NR})
 
-EOF
+  CHANGES
+    .freeze
 
   Dir.glob("package/*.changes").each do |changes_file|
     changes = File.read(changes_file)
@@ -175,10 +178,10 @@ end
 
 def modify_opensuse_rakefile(file, lines, rake_namespace)
   line_index = lines.index { |l| l =~ /^\s*#{rake_namespace}::Tasks.configuration do \|conf\|/ }
-  fail "Cannot modify #{file}" unless line_index
+  raise "Cannot modify #{file}" unless line_index
 
   lines.insert(line_index + 1, OBS_SUBMIT, "\n")
-  File.write(file, lines.join(""))
+  File.write(file, lines.join)
 end
 
 def modify_sle_rakefile(file, lines, rake_namespace)
@@ -193,7 +196,7 @@ def modify_sle_rakefile(file, lines, rake_namespace)
     lines.insert(line_index + 1, "\n", new_line)
   end
 
-  File.write(file, lines.join(""))
+  File.write(file, lines.join)
 end
 
 def modify_rakefile(repo)
@@ -294,12 +297,12 @@ def bump_version(repo)
 end
 
 def git_clone(repo, checkout_dir)
-  if !File.directory?(checkout_dir)
-    system("git clone --depth 1 #{repo.ssh_url} #{checkout_dir}")
-  else
+  if File.directory?(checkout_dir)
     Dir.chdir(checkout_dir) do
       system("git pull --rebase")
     end
+  else
+    system("git clone --depth 1 #{repo.ssh_url} #{checkout_dir}")
   end
 end
 
