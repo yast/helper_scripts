@@ -9,6 +9,7 @@ differently.
 
 - [Creating a New Maintenance Branch](#creating-a-new-maintenance-branch)
   - [Table of Content](#table-of-content)
+  - [Access Permissions](#access-permissions)
   - [Preparations](#preparations)
     - [Internal Open Build Service (IBS)](#internal-open-build-service-ibs)
     - [Public Open Build Service (OBS)](#public-open-build-service-obs)
@@ -31,6 +32,8 @@ differently.
     - [Full Run](#full-run)
   - [Libyui](#libyui)
 
+## Access Permissions
+
 To do the branching you need several access permissions:
 
 - Admin permission in GitHub (to change repository properties and push the changes)
@@ -43,10 +46,8 @@ To do the branching you need several access permissions:
 First we need to prepare the OBS projects.
 
 The public OBS is used to build and host the container image which is used in
-the CI tests at GitHub.
-
-The internal OBS is used to build the package and for sending the actual
-maintenance updates.
+the CI tests at GitHub. The internal OBS is used to build the package and for
+sending the actual maintenance updates.
 
 ### Internal Open Build Service (IBS)
 
@@ -54,8 +55,8 @@ maintenance updates.
   maintenance subproject `Devel:YaST:SLE-15-SP5`
 
 - Go to the [Meta](https://build.suse.de/projects/Devel:YaST:SLE-15-SP5/meta)
-  section. Copy the settings from the [previous version project]
-  (https://build.suse.de/projects/Devel:YaST:SLE-15-SP4/meta). Keep the
+  section. Copy the settings from the [previous version project](
+  https://build.suse.de/projects/Devel:YaST:SLE-15-SP4/meta). Keep the
   new SP5 project name and update the repositories so they refer to the new
   SLE15-SP5. This will also grant the access for the YaST team members
   and to the Jenkins user to it can commit new packages and and create
@@ -78,8 +79,8 @@ copy/delete it manually!!*
 
 ### Public Open Build Service (OBS)
 
-This is similar to the internal OBS setup with a small different that we are
-additionally building some container images for GitHub CI.
+This is similar to the internal OBS setup with a small difference that we are
+additionally building container images for the GitHub CI.
 
 #### Basic Project Setup
 
@@ -87,13 +88,14 @@ additionally building some container images for GitHub CI.
   maintenance subproject `YaST:SLE-15:SP5`.
 
 - Go to the [Meta](https://build.opensuse.org/projects/YaST:YaST:SLE-15:SP5/meta)
-  section. Copy the settings from the [previous version project]
-  (https://build.opensuse.org/projects/YaST:SLE-15:SP4/meta). Keep the
+  section. Copy the settings from the [previous version project](
+  https://build.opensuse.org/projects/YaST:SLE-15:SP4/meta). Keep the
   new SP5 project name and update the repositories so they refer to the new
   openSUSE Leap 15.5 (the SLE projects are usually not available at this point).
   This will also grant the access for the YaST team members
 
-- *Note: The order of the repositories in the `<repository>` section is important!*
+- *Note: The order of the repositories in the `<repository>` section is important!
+  It defines the preferred repositories.*
 
 - Set the [project config](https://build.opensuse.org/projects/YaST:SLE-15:SP5/prjconf) to
   build images and containers in that specified repositories instead of usual RPM packages
@@ -137,8 +139,7 @@ osc ls YaST:SLE-15:SP4 | grep rubygem | xargs -I@ osc copypac -e YaST:Head @ YaS
 We build the base openSUSE Leap 15.5 image in this project. In theory we could
 use the official Leap 15.5 container here, but in the past there were some
 problems with that (less frequently rebuilds, sometimes in contained old
-package versions or the included packages changed over time).
-
+package versions or the set of included packages changed over time).
 This ensures that the image is always up to date and that the content does not
 change (unless we change it explicitly).
 
@@ -157,16 +158,18 @@ osc diff
 # commit to OBS
 osc commit -m "new base version"
 ```
-Make sure the build is enabled for the `images` repository in the
-[image repositories](https://build.opensuse.org/repositories/YaST:SLE-15:SP5/opensuse-leap_15.5-image).
 
-Now the base Docker image with openSUSE Leap 15.5 should be built.
+Make sure the build is enabled for the `images` repository in the
+[repositories](https://build.opensuse.org/repositories/YaST:SLE-15:SP5/opensuse-leap_15.5-image)
+settings for this image.
+
+Now the base continer image with the openSUSE Leap 15.5 product should be built.
 
 #### Build the CI Containers
 
 Now we need to build the containers used in the GitHub CI. Usually it is OK
 just to reuse the images from the previous release and slightly adapt them
-for the release.
+for the new release.
 
 ##### The Ruby Container
 
@@ -236,17 +239,19 @@ git clone gitlab@gitlab.suse.de:yast/infra.git
 cd infra
 ```
 
-### IBS -> OBS Synchronization
-
 The [Jenkins Job Builder](https://jenkins-job-builder.readthedocs.io/en/latest/index.html)
-tool is used for managing the Jenkins jobs.
-
-See more details in the [documentation](
-https://gitlab.suse.de/yast/infra/-/blob/master/doc/jenkins-jobs.md).
+tool is used for managing the Jenkins jobs. You can install it with `pip`:
 
 ```shell
 sudo pip install jenkins-job-builder
 ```
+
+See more details in the [documentation](
+https://gitlab.suse.de/yast/infra/-/blob/master/doc/jenkins-jobs.md).
+
+Do not forget to open a merge request in gitlab.suse.de with your changes.
+
+### IBS -> OBS Synchronization
 
 The synchronization jobs are defined in `jenkins/ci.suse.de/sync-jobs.yaml` file.
 Just add a new job at the end and make the previous jobs to run less often.
@@ -264,11 +269,9 @@ If it is OK then you can deploy the jobs with:
 jenkins-jobs --conf jenkins/ci.suse.de.ini update jenkins/ci.suse.de/ "yast-obs-sync-sle15*"
 ```
 
-Check the newly create job in https://ci.suse.de/view/YaST/ and start it manually
+Check the newly created job in https://ci.suse.de/view/YaST/ and start it manually
 to synchronize the packages (click "Build Now" button in the [job details](
 https://ci.suse.de/view/YaST/job/yast-obs-sync-sle15-sp5/)).
-
-Do not forget to open a merge request in gitlab.suse.de with your changes.
 
 ### Autosubmission
 
@@ -277,7 +280,7 @@ The autosubmission jobs are defined in the `jenkins/ci.suse.de/yast-jobs.yaml` f
 Add jobs for new branch in the `project_defaults` section.
 
 Note: if you still want to submit the GA project because the maintenance project
-is not yet open use the `sle_latest` submit target and change that to `sleXspY`
+is not yet open use the `sle_latest` submit target and change that to `sle<X>sp<Y>`
 after releasing the GA version.
 
 ```shell
@@ -329,20 +332,19 @@ The main branching script is located in the [create_maintenance_branch.rb](
 ./create_maintenance_branch.rb) file.
 
 The branching script at the beginning contains some hardcoded constants which
-are related to the branching process and need to be adapted for each branch.
-
-You also might need to adapt the script to a different scenario, some things
-might have been changed since the last time it was used.
+are related to the branching process and need to be adapted for each branch
+created. You also might need to adapt the script to a different scenario, some
+things might have been changed since the last time it was used.
 
 ### Details of the Branching Script
 
 - If the new branch already exists in the Git repository then the repository
   is skipped. It assumes that the branch was created manually. That also means
-  it is safe to run the script again, if it for example crashes.
+  it is safe to run the script again, if it for example crashes or is aborted.
 
 - The changes in `master` branch are committed directly without opening
-  a pull request. (The GitHub branch protection feature is temporarily turned
-  off.)
+  a pull request. The GitHub branch protection feature is temporarily turned
+  off.
 
 - It also merges and reverts the changes from the maintenance branch to the
   `master` branch. That means the next merge from the maintenance branch
@@ -358,11 +360,11 @@ script in confirm mode (`-c`) and only on a single repository (`-r`):
 ./create_maintenance_branch.rb -c -r yast-yast2
 ```
 
-The script will display a diff with the automatically applied changed in the
-newly created branch. If it is OK then confirm the change and the script
-will commit that change and push the new branch to GitHub.
+The script will display a diff with the automatically applied changes in the
+newly created maintenance branch. If it is OK then confirm that and the script
+will commit the changes and push the new branch to GitHub.
 
-Then it displays a diff for changes in the `master` branch (version bump)
+Then it displays a diff for the changes in the `master` branch (version bump)
 and after confirmation it will push that to GitHub.
 
 ### Full Run
