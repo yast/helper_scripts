@@ -99,20 +99,13 @@ options = {
   "enforce_admins"                => true,
   "required_pull_request_reviews" => {
     "include_admins" => true
-  },
-  # Beta API, it needs a special accept header to not display a warning
-  # https://developer.github.com/v3/repos/branches/#update-branch-protection
-  accept: "application/vnd.github.luke-cage-preview+json"
+  }
 }
 
 results = Parallel.map(repo_names) do |repo|
   full_repo_name = "#{GH_ORG}/#{repo}"
   puts "Checking #{full_repo_name} branches..."
-  # special accept header is required to get the branch protection status
-  # (see https://developer.github.com/v3/repos/branches/#list-branches)
-  branches = github.branches(full_repo_name,
-    accept: "application/vnd.github.luke-cage-preview+json")
-
+  branches = github.branches(full_repo_name)
   branches.reduce(0) do |counter, branch|
     next counter if branch["protected"] || TO_PROTECT.none? { |r| branch["name"] =~ r }
 
