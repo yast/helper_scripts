@@ -24,13 +24,13 @@ require "octokit"
 ############# start of editable values ############
 
 # new package version
-NEW_PACKAGE_VERSION = "4.4.0"
+NEW_PACKAGE_VERSION = "5.0.0"
 # some packages use distro based version
-NEW_DISTRO_VERSION = "15.4.0"
+NEW_DISTRO_VERSION = "16.0.0"
 # author + email, written into the changes files
-AUTHOR = "Ladislav Slezák <lslezak@suse.cz>"
+AUTHOR = "Josef Reidinger <jreidinger@suse.cz>"
 # change only packages which have this branch defined
-GIT_BRANCH = "SLE-15-SP3"
+GIT_BRANCH = "SLE-15-SP5"
 # bug number used in changes
 BUG_NR = "1185510"
 
@@ -40,9 +40,9 @@ BUG_NR = "1185510"
 DRY_RUN = ENV["DRY_RUN"]
 
 # for checking whether the version has been already bumped
-NEW_PACKAGE_PREFIX = NEW_PACKAGE_VERSION[0..-2]
+NEW_PACKAGE_PREFIX = NEW_PACKAGE_VERSION[0..1]
 # prefix of the distro version
-NEW_DISTRO_PREFIX = NEW_DISTRO_VERSION[0..-2].freeze
+NEW_DISTRO_PREFIX = NEW_DISTRO_VERSION[0..2].freeze
 
 # the major version prefix of the package version
 NEW_MAJOR_PACKAGE_VERSION = NEW_PACKAGE_VERSION.split(".").first + "."
@@ -177,7 +177,7 @@ git_repos.each do |repo|
     end
 
     expected_versioning = versions.all? do |v|
-      v.start_with?(NEW_MAJOR_PACKAGE_VERSION, NEW_MAJOR_DISTRO_VERSION)
+      v.start_with?("4.6.", "15.5")
     end
 
     # it uses some different versioning, rather do not touch it
