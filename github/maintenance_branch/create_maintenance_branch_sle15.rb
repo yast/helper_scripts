@@ -2,6 +2,10 @@
 
 # This script creates a new maintenance branch for all YaST packages.
 #
+# The difference to common one is that it is based on previous maintenance branch and not
+# master (so it creates SP6 maintenance branch from SP5 maintenance branch).
+# This one is adapted for sle15 maintenance branches, but can be tweaked.
+#
 # You need admin access rights to temporarily disable the GitHub branch protection
 # and allow direct push to "master".
 #
