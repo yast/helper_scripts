@@ -164,7 +164,7 @@ end
 # have the same time entry for all packages
 TIME_ENTRY = Time.now.utc.strftime("%a %b %d %T UTC %Y")
 
-def update_changes(version)
+def update_changes(_version)
   entry = <<~CHANGES
     -------------------------------------------------------------------
     #{TIME_ENTRY} - #{AUTHOR}
@@ -314,6 +314,20 @@ def git_clone(repo, checkout_dir)
   end
 end
 
+def switch_branch!(client, repo)
+  branches = client.branches(repo.full_name).map(&:name)
+  if branches.include?(GIT_OLD_BRANCH)
+    system("git checkout #{GIT_OLD_BRANCH}")
+  elsif branches.include?(GIT_OPENSUSE_OLD_BRANCH)
+    system("git checkout #{GIT_OPENSUSE_OLD_BRANCH}")
+  else
+    puts "ERROR: FAiled to find old branch #{branches.inspect}"
+    return false
+  end
+
+  true
+end
+
 def create_branch?(client, repo)
   branches = client.branches(repo.full_name).map(&:name)
 
@@ -327,15 +341,7 @@ def create_branch?(client, repo)
 end
 
 def create_branch(client, repo, confirm)
-  branches = client.branches(repo.full_name).map(&:name)
-  if branches.include?(GIT_OLD_BRANCH)
-    system("git checkout #{GIT_OLD_BRANCH}")
-  elsif (branches.include?(GIT_OPENSUSE_OLD_BRANCH))
-    system("git checkout #{GIT_OPENSUSE_OLD_BRANCH}")
-  else
-    puts "ERROR: FAiled to find old branch #{branches.inspect}"
-    return false
-  end
+  return false unless switch_branch!(client, repo)
 
   # create the maintenance branch and modify the Rakefile and GitHub Actions
   new_branch = create_new_branch(repo)
@@ -350,7 +356,6 @@ def create_branch(client, repo, confirm)
 
   # commit the changes and push the new branch, enable branch protection
   system("git commit -a -m \"Adapt files for the #{new_branch} branch\"")
-  commit = `git rev-parse HEAD`
   system("git push --set-upstream origin #{new_branch}")
 
   protection_options = {
