@@ -82,22 +82,24 @@ copy/delete it manually!!*
 This is similar to the internal OBS setup with a small difference that we are
 additionally building container images for the GitHub CI.
 
+(This section has been updated for SP6)
+
 #### Basic Project Setup
 
-- At https://build.opensuse.org/project/new?namespace=YaSTCreate a new
-  maintenance subproject `YaST:SLE-15:SP5`.
+- At https://build.opensuse.org/project/new?namespace=YaST%3ASLE-15 Create a new
+  maintenance subproject `YaST:SLE-15:SP6`.
 
-- Go to the [Meta](https://build.opensuse.org/projects/YaST:YaST:SLE-15:SP5/meta)
+- Go to the [Meta](https://build.opensuse.org/projects/YaST:YaST:SLE-15:SP6/meta)
   section. Copy the settings from the [previous version project](
-  https://build.opensuse.org/projects/YaST:SLE-15:SP4/meta). Keep the
+  https://build.opensuse.org/projects/YaST:SLE-15:SP5/meta). Keep the
   new SP5 project name and update the repositories so they refer to the new
-  openSUSE Leap 15.5 (the SLE projects are usually not available at this point).
+  openSUSE Leap 15.6 (the SLE projects are usually not available at this point).
   This will also grant the access for the YaST team members
 
 - *Note: The order of the repositories in the `<repository>` section is important!
   It defines the preferred repositories.*
 
-- Set the [project config](https://build.opensuse.org/projects/YaST:SLE-15:SP5/prjconf) to
+- Set the [project config](https://build.opensuse.org/projects/YaST:SLE-15:SP6/prjconf) to
   build images and containers in that specified repositories instead of usual RPM packages
 
 ```
@@ -131,13 +133,15 @@ the newly added Ruby gems. If you see some dependency problems later then
 you need to fix them manually.
 
 ```shell
-osc ls YaST:SLE-15:SP4 | grep rubygem | xargs -I@ osc copypac -e YaST:Head @ YaST:SLE-15:SP5
+OLD=5; NEW=6
+osc ls YaST:SLE-15:SP${OLD?} | xargs -I@ osc copypac -e SUSE:SLE-15-SP${OLD?}:Update @ YaST:SLE-15:SP${NEW?}
+osc ls YaST:SLE-15:SP${OLD?} | grep rubygem | xargs -I@ osc copypac -e YaST:Head @ YaST:SLE-15:SP${NEW?}
 ```
 
 #### Build the Base Image
 
-We build the base openSUSE Leap 15.5 image in this project. In theory we could
-use the official Leap 15.5 container here, but in the past there were some
+We build the base openSUSE Leap 15.6 image in this project. In theory we could
+use the official Leap 15.6 container here, but in the past there were some
 problems with that (less frequently rebuilds, sometimes in contained old
 package versions or the set of included packages changed over time).
 This ensures that the image is always up to date and that the content does not
@@ -146,13 +150,14 @@ change (unless we change it explicitly).
 Copy the openSUSE Leap base image and update it:
 
 ```shell
+OLD=5; NEW=6
 # copy the image from the previous project
-osc copypac -e YaST:Head opensuse-leap_latest-image YaST:SLE-15:SP5 opensuse-leap_15.5-image
+osc copypac -e YaST:Head opensuse-leap_latest-image YaST:SLE-15:SP${NEW?} opensuse-leap_15.${NEW?}-image
 # update it for the new release
-osc co YaST:SLE-15:SP5
-cd YaST:SLE-15:SP5/opensuse-leap_15.5-image
-sed -e "s/15_4/15_5/" -i config.kiwi
-sed -e "s/15\.4/15.5/" -i config.kiwi
+osc co YaST:SLE-15:SP${NEW?}
+cd YaST:SLE-15:SP${NEW?}/opensuse-leap_15.${NEW?}-image
+sed -e "s/15_${OLD?}/15_${NEW?}/" -i config.kiwi
+sed -e "s/15\.${OLD?}/15.${NEW?}/" -i config.kiwi
 # verify the changes
 osc diff
 # commit to OBS
@@ -160,10 +165,10 @@ osc commit -m "new base version"
 ```
 
 Make sure the build is enabled for the `images` repository in the
-[repositories](https://build.opensuse.org/repositories/YaST:SLE-15:SP5/opensuse-leap_15.5-image)
+[repositories](https://build.opensuse.org/repositories/YaST:SLE-15:SP6/opensuse-leap_15.6-image)
 settings for this image.
 
-Now the base continer image with the openSUSE Leap 15.5 product should be built.
+Now the base continer image with the openSUSE Leap 15.6 product should be built.
 
 #### Build the CI Containers
 
@@ -174,19 +179,20 @@ for the new release.
 ##### The Ruby Container
 
 ```shell
+OLD=5; NEW=6
 # copy the image from the previous project
-osc copypac YaST:SLE-15:SP4 ci-ruby-container YaST:SLE-15:SP5
+osc copypac YaST:SLE-15:SP${OLD?} ci-ruby-container YaST:SLE-15:SP${NEW?}
 # go to the checkout and update it for the new release
-sed -e "s/15\.4/15.5/" -i Dockerfile
-sed -e "s/SP4/SP5/" -i Dockerfile
+sed -e "s/15\.${OLD?}/15.${NEW?}/" -i Dockerfile
+sed -e "s/SP${OLD?}/SP${NEW?}/" -i Dockerfile
 # verify the changes
 osc diff
 # commit to OBS
-osc commit -m "new base version"
+osc commit -m "new base version for SP${NEW?}"
 ```
 
 Make sure build is enabled for the [containers repository](
-https://build.opensuse.org/repositories/YaST:SLE-15:SP5/ci-ruby-container).
+https://build.opensuse.org/repositories/YaST:SLE-15:SP6/ci-ruby-container).
 
 
 It is a good idea to compare the differences from the YaST:Head project,
@@ -194,20 +200,24 @@ maybe there were some new changes which might make sense also in the
 maintenance project. Check the diff with command:
 
 ```shell
-osc rdiff YaST:Head ci-ruby-container-leap_latest YaST:SLE-15:SP5 ci-ruby-container
+osc rdiff YaST:Head ci-ruby-container-leap_latest YaST:SLE-15:SP6 ci-ruby-container
 ```
+
+In particular, take care to have a version of yast-rake that knows
+about this SP or the project (and container) will need to be rebuilt.
 
 ##### The C++ Container
 
 This is similar to the Ruby container above, see more details there.
 
 ```shell
-osc copypac YaST:SLE-15:SP4 ci-cpp-container YaST:SLE-15:SP5
-sed -e "s/15\.4/15.5/" -i Dockerfile
-sed -e "s/SP4/SP5/" -i Dockerfile
+OLD=5; NEW=6
+osc copypac YaST:SLE-15:SP${OLD?} ci-cpp-container YaST:SLE-15:SP${NEW?}
+sed -e "s/15\.${OLD?}/15.${NEW?}/" -i Dockerfile
+sed -e "s/SP${OLD?}/SP${NEW?}/" -i Dockerfile
 osc diff
-osc commit -m "new base version"
-osc rdiff YaST:Head ci-cpp-container YaST:SLE-15:SP5 ci-cpp-container
+osc commit -m "new base version for SP${NEW?}"
+osc rdiff YaST:Head ci-cpp-container YaST:SLE-15:SP${NEW?} ci-cpp-container
 ```
 
 ##### The libstorage-ng Container
@@ -215,12 +225,13 @@ osc rdiff YaST:Head ci-cpp-container YaST:SLE-15:SP5 ci-cpp-container
 Again, this is similar to the Ruby container above, see more details there.
 
 ```shell
-osc copypac YaST:SLE-15:SP4 ci-libstorage-ng-container YaST:SLE-15:SP5
-sed -e "s/15\.4/15.5/" -i Dockerfile
-sed -e "s/SP4/SP5/" -i Dockerfile
+OLD=5; NEW=6
+osc copypac YaST:SLE-15:SP${OLD?} ci-libstorage-ng-container YaST:SLE-15:SP${NEW?}
+sed -e "s/15\.${OLD?}/15.${NEW?}/" -i Dockerfile
+sed -e "s/SP${OLD?}/SP${NEW?}/" -i Dockerfile
 osc diff
-osc commit -m "new base version"
-osc rdiff YaST:Head ci-cpp-container YaST:SLE-15:SP5 ci-cpp-container
+osc commit -m "new base version for SP${NEW?}"
+osc rdiff YaST:Head ci-libstorage-ng-container YaST:SLE-15:SP${NEW?} ci-libstorage-ng-container
 ```
 
 ## Jenkins Configuration
