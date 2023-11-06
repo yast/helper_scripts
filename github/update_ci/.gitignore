@@ -1,0 +1,5 @@
+.bundle
+.byebug_history
+.vendor
+Gemfile.lock
+node_modules/
