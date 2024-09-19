@@ -379,7 +379,7 @@ def create_branch(client, repo, confirm)
   # checkout master, merge the maintenance branch and always use current HEAD
   system("git checkout master")
   # use ours merge strategy as there will be conflicts we want to ignore
-  system("git merge -s ours -m \"Clean merge of SP#{SP}\" #{new_branch}")
+  system("git merge -s ours -m \"Mark the SP#{SP} branch as merged without any change\" #{new_branch}")
 
   # push to master, temporarily disable branch protection
   with_unprotected(client, repo.full_name, repo.default_branch) do
