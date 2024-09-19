@@ -13,7 +13,6 @@ require "fileutils"
 
 require_relative "../github_actions/gh_helpers"
 
-
 gh_organization = "yast"
 
 # subdirectory where to clone Git repositories
@@ -58,7 +57,7 @@ git_repos = gh_repos(client, gh_organization)
 removed = []
 
 r2 = ["system-role-xen", "yast-slp", "yast-testsuite"]
-git_repos.select!{|r| r2.include?(r.name)}
+git_repos.select! { |r| r2.include?(r.name) }
 
 git_repos.each do |repo|
   branches = client.branches(repo.full_name).map(&:name)
@@ -76,12 +75,14 @@ git_repos.each do |repo|
     system("git checkout SLE-15-SP6")
     # find the package name, expand the macros, some packages use a macro in the name
   end
-  
-  pkg = `find #{checkout_dir.shellescape} -name '*.spec' | grep -v /test/ | xargs cat | grep ^Name: | sed -e 's/^Name:\\s*//' | sort | head -n1`.chomp
+
+  pkg = `find #{checkout_dir.shellescape} -name '*.spec' | grep -v /test/ | \
+xargs cat | grep ^Name: | sed -e 's/^Name:\\s*//' | sort | head -n1`.chomp
 
   # expand the RPM macros when needed
   if pkg.include?("%")
-      pkg = `find #{checkout_dir.shellescape} -name '*.spec' | grep -v /test/ | xargs rpmspec --parse | grep ^Name: | sed -e 's/^Name:\\s*//' | sort | head -n1`.chomp
+    pkg = `find #{checkout_dir.shellescape} -name '*.spec' | grep -v /test/ | \
+xargs rpmspec --parse | grep ^Name: | sed -e 's/^Name:\\s*//' | sort | head -n1`.chomp
   end
 
   if pkg.empty?
@@ -93,9 +94,7 @@ git_repos.each do |repo|
   osc_dir = File.join("SUSE:SLE-15-SP6:Update", pkg)
 
   # checkout the package from IBS
-  if !File.exist?(osc_dir)
-    system("osc -A https://api.suse.de co SUSE:SLE-15-SP6:Update #{pkg.shellescape}")
-  end
+  system("osc -A https://api.suse.de co SUSE:SLE-15-SP6:Update #{pkg.shellescape}") if !File.exist?(osc_dir)
 
   Find.find(osc_dir) do |obs_path|
     obs_file = File.basename(obs_path)
@@ -105,6 +104,7 @@ git_repos.each do |repo|
       Find.prune
     else
       next if File.directory?(obs_path)
+
       git_path = find_file(obs_file, checkout_dir)
 
       if git_path
