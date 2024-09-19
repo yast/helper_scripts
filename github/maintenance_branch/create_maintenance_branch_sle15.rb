@@ -12,49 +12,56 @@
 # You might need to edit the configuration below.
 #
 
-############# start of editable values ############
+############# start of configuration values ############
+# usually it should be enough just to edit these few values
 
-# new YaST package versions in master
-# WARNING: libyui packages might use different versioning!
-NEW_PACKAGE_VERSION = "4.6.0".freeze
-
-# some packages use the distro based version (like the skelcds)
-NEW_DISTRO_VERSION = "15.6.0".freeze
-
-# author + email, written into the changes files
-AUTHOR = "Josef Reidinger <jreidinger@suse.com>".freeze
-
-# change only packages which have this branch defined,
-# if there is a brand new package you need to branch it manually
-GIT_OLD_BRANCH = "SLE-15-SP5".freeze
-
-# new branch to create
-GIT_NEW_BRANCH = "SLE-15-SP6".freeze
-
-# new branch for openSUSE specific packages
-GIT_OPENSUSE_NEW_BRANCH = "openSUSE-15_6".freeze
-GIT_OPENSUSE_OLD_BRANCH = "openSUSE-15_5".freeze
+# the new SP version number
+SP = "7".freeze
 
 # bug number used in the *.changes files,
 # open a new bug report regarding branching
-BUG_NR = "1208913".freeze
+BUG_NR = "1230201".freeze
+
+# author + email, written into the changes files
+AUTHOR = "Ladislav Slezák <lslezak@suse.com>".freeze
+
+############# end of configuration values ############
+
+# previous SP used as the base for the new one
+OLD_SP = (SP.to_i - 1).to_s
+
+# new YaST package versions in master
+# WARNING: libyui packages might use different versioning!
+NEW_PACKAGE_VERSION = "4.#{SP}.0".freeze
+
+# some packages use the distro based version (like the skelcds)
+NEW_DISTRO_VERSION = "15.#{SP}.0".freeze
+
+# change only packages which have this branch defined,
+# if there is a brand new package you need to branch it manually
+GIT_OLD_BRANCH = "SLE-15-SP#{OLD_SP}".freeze
+
+# new branch to create
+GIT_NEW_BRANCH = "SLE-15-SP#{SP}".freeze
+
+# new branch for openSUSE specific packages
+GIT_OPENSUSE_NEW_BRANCH = "openSUSE-15_#{SP}".freeze
+GIT_OPENSUSE_OLD_BRANCH = "openSUSE-15_#{OLD_SP}".freeze
 
 # Rakefile submit target
-SUBMIT_TARGET = "sle15sp6".freeze
+SUBMIT_TARGET = "sle15sp#{SP}".freeze
 
 OBS_SUBMIT = <<TEXT
   conf.obs_api = "https://api.opensuse.org"
-  conf.obs_target = "openSUSE_Leap_15.6"
-  conf.obs_sr_project = "openSUSE:Leap:15.6:Update"
-  conf.obs_project = "YaST:openSUSE:15.6"
+  conf.obs_target = "openSUSE_Leap_15.#{SP}"
+  conf.obs_sr_project = "openSUSE:Leap:15.#{SP}:Update"
+  conf.obs_project = "YaST:openSUSE:15.#{SP}"
 TEXT
   .freeze
 
 # prefix for the Docker image name used in GitHub CI
-IMAGE_PATH = "registry.opensuse.org/yast/sle-15/sp6/containers/".freeze
-LIBYUI_IMAGE_PATH = "registry.opensuse.org/devel/libraries/libyui/sle-15/sp6/containers/".freeze
-
-############# end of editable values ############
+IMAGE_PATH = "registry.opensuse.org/yast/sle-15/sp#{SP}/containers/".freeze
+LIBYUI_IMAGE_PATH = "registry.opensuse.org/devel/libraries/libyui/sle-15/sp#{SP}/containers/".freeze
 
 require "optparse"
 require_relative "../github_actions/gh_helpers"
@@ -169,7 +176,7 @@ def update_changes(_version)
     -------------------------------------------------------------------
     #{TIME_ENTRY} - #{AUTHOR}
 
-    - Branch package for SP6 (bsc##{BUG_NR})
+    - Branch package for SP#{SP} (bsc##{BUG_NR})
 
   CHANGES
     .freeze
@@ -307,6 +314,7 @@ end
 def git_clone(repo, checkout_dir)
   if File.directory?(checkout_dir)
     Dir.chdir(checkout_dir) do
+      system("git reset --hard")
       system("git pull --rebase")
     end
   else
@@ -371,7 +379,7 @@ def create_branch(client, repo, confirm)
   # checkout master, merge the maintenance branch and always use current HEAD
   system("git checkout master")
   # use ours merge strategy as there will be conflicts we want to ignore
-  system("git merge -s ours -m \"Clean merge of SP6\" #{new_branch}")
+  system("git merge -s ours -m \"Clean merge of SP#{SP}\" #{new_branch}")
 
   # push to master, temporarily disable branch protection
   with_unprotected(client, repo.full_name, repo.default_branch) do
